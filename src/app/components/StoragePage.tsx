@@ -442,8 +442,12 @@ export function StoragePage() {
                     <div className="font-medium text-white">{myProfile.name}</div>
                     <div className="text-sm text-slate-400">{formatBirth(myProfile)} {myProfile.city}</div>
                   </div>
-                  <div className="bg-amber-500/20 text-amber-400 px-2 py-1 rounded-lg text-xs">
-                    전문가
+                  <div className={`px-2 py-1 rounded-lg text-xs ${
+                    mode === 'beginner' ? 'bg-amber-500/20 text-amber-400' :
+                    mode === 'advanced' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-purple-500/20 text-purple-400'
+                  }`}>
+                    {modeInfo.name}
                   </div>
                 </div>
               ) : (

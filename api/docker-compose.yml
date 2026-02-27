@@ -1,0 +1,109 @@
+# 사주풀이 API + Redis 스택
+# ==========================
+# 동시접속 1,000+ 대응 최적화 구성
+
+version: '3.8'
+
+services:
+  # FastAPI 서버
+  api:
+    build: .
+    container_name: saju-api
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - WORKERS=4
+      - MAX_WORKERS=8
+      - TIMEOUT=120
+      - REDIS_URL=redis://redis:6379/0
+      - CACHE_TTL=3600
+      - RATE_LIMIT=100/minute
+      - PRODUCTION=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      # 고전 문헌 DB 마운트 (필요 시)
+      - saju_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - saju-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Redis 캐시 서버
+  redis:
+    image: redis:7-alpine
+    container_name: saju-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - saju-network
+
+  # Prometheus (옵션 - 모니터링)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: saju-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - saju-network
+    profiles:
+      - monitoring
+
+  # Grafana (옵션 - 대시보드)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: saju-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - saju-network
+    profiles:
+      - monitoring
+
+networks:
+  saju-network:
+    driver: bridge
+
+volumes:
+  saju_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

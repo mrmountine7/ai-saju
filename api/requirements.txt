@@ -1,0 +1,15 @@
+# 사주풀이 D모드 API 서버 의존성
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# 성능 최적화 패키지
+httpx>=0.27.0           # 비동기 HTTP 클라이언트
+redis>=5.0.0            # Redis 캐싱
+slowapi>=0.1.9          # Rate Limiting
+gunicorn>=21.2.0        # 멀티워커 WSGI 서버
+psutil>=5.9.0           # 시스템 모니터링
+prometheus-client>=0.19.0  # Prometheus 메트릭

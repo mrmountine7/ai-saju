@@ -1,0 +1,23 @@
+# Prometheus 설정 - 사주풀이 API 모니터링
+# ==========================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Saju API 서버 메트릭
+  - job_name: 'saju-api'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: /metrics
+
+  # Redis 메트릭 (옵션)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # Prometheus 자체 메트릭
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

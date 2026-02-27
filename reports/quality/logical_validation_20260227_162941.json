@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-02-27T16:29:41.479306",
+  "total_checked": 50,
+  "issue_count": 4,
+  "summary": {
+    "total_issues": 4,
+    "by_severity": {
+      "critical": 0,
+      "warning": 0,
+      "info": 4
+    },
+    "by_type": {
+      "context_break": 4
+    },
+    "by_book": {
+      "연해자평": 1,
+      "궁통보감": 3
+    }
+  },
+  "issues": [
+    {
+      "chunk_id": "430",
+      "chunk_uid": "연해자평_L4_11_6faeff2f",
+      "book_title": "연해자평",
+      "issue_type": "context_break",
+      "severity": "info",
+      "message": "문장이 완결되지 않은 채로 청크가 종료됨",
+      "details": {
+        "current_end": "痔漏、魑魅失魂、劳怯之症；外则皮肤枯燥、疯鼻赤疽痈，皆脓血之咎。经云：『金弱遇火炎之地，血疾无疑。』",
+        "next_start": "印綬若伤尽，不留一点；身弱忌官星，不怕七杀。\n如甲用辛官，如丁火旺，能生土财；最忌见官星，亦要身旺。"
+      },
+      "llm_analysis": "",
+      "suggestion": "청크 경계 재조정 검토"
+    },
+    {
+      "chunk_id": "639",
+      "chunk_uid": "궁통보감_L4_52_4b708787",
+      "book_title": "궁통보감",
+      "issue_type": "context_break",
+      "severity": "info",
+      "message": "문장이 완결되지 않은 채로 청크가 종료됨",
+      "details": {
+        "current_end": "。\n{| class=\"wikitable\"\n|时日月年\n子子子子\n|时日月年\n丑申丑卯\n|时日月年",
+        "next_start": "巳戌戌寅\n|时日月年\n十月庚金，水冷性寒，非丁莫造，非丙不暖。丁甲两透，支无水局，一榜有之。支藏丙火"
+      },
+      "llm_analysis": "",
+      "suggestion": "청크 경계 재조정 검토"
+    },
+    {
+      "chunk_id": "654",
+      "chunk_uid": "궁통보감_L4_67_47647c94",
+      "book_title": "궁통보감",
+      "issue_type": "context_break",
+      "severity": "info",
+      "message": "문장이 완결되지 않은 채로 청크가 종료됨",
+      "details": {
+        "current_end": "刀笔亨通，乏金更美。或支成金局无火，僧道之流。\n{| class=\"wikitable\"\n|时日月年",
+        "next_start": "或一派辛金，一位壬水，无庚杂乱，又主富中取贵。或一派壬水洩金，无戊出制，为沙水同流，主奔波劳苦。若得"
+      },
+      "llm_analysis": "",
+      "suggestion": "청크 경계 재조정 검토"
+    },
+    {
+      "chunk_id": "661",
+      "chunk_uid": "궁통보감_L4_74_7b160f6f",
+      "book_title": "궁통보감",
+      "issue_type": "context_break",
+      "severity": "info",
+      "message": "문장이 완결되지 않은 채로 청크가 종료됨",
+      "details": {
+        "current_end": "。\n{| class=\"wikitable\"\n|时日月年\n亥未酉酉\n|时日月年\n申酉酉酉\n|时日月年",
+        "next_start": "酉丑辰午\n|时日月年\n四月癸水，喜辛金为用，无辛用庚。若辛高透，不见丁火，加以壬透，主科名荣贵，声播"
+      },
+      "llm_analysis": "",
+      "suggestion": "청크 경계 재조정 검토"
+    }
+  ]
+}

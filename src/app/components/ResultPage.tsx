@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, X, Loader2, BookOpen, ChevronDown, ChevronUp, AlertCircle, Database, Brain, Sparkles, TrendingUp, Heart, Briefcase, Shield, Crown, Lock, LogIn, History, Download, Save, Check, Share2, FileDown } from 'lucide-react';
+import { ArrowLeft, X, Loader2, BookOpen, ChevronDown, ChevronUp, AlertCircle, Database, Brain, Sparkles, TrendingUp, Heart, Briefcase, Shield, Crown, Lock, LogIn, History, Download, Save, Check, Share2, FileDown, Users } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { analyzeSajuDMode, checkApiHealth, type SajuAnalysisResponse, type SajuRequest } from '@/lib/saju-api-client';
 import { useProfile, type Profile } from '@/lib/profile-context';
@@ -1219,6 +1219,39 @@ export function ResultPage() {
                   )}
                 </div>
 
+                {/* 사주가 모드 전용 기능 */}
+                {isExpertMode && (
+                  <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-xl p-4 border border-purple-500/30">
+                    <h4 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
+                      <Crown className="w-4 h-4" />
+                      사주가 전용 기능
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => navigate('/expert/classics')}
+                        className="bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg p-2 text-center transition-colors"
+                      >
+                        <BookOpen className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                        <span className="text-xs text-purple-300">원문 검색</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/expert/qna')}
+                        className="bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg p-2 text-center transition-colors"
+                      >
+                        <Brain className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                        <span className="text-xs text-purple-300">AI Q&A</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/expert/clients')}
+                        className="bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-lg p-2 text-center transition-colors"
+                      >
+                        <Users className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                        <span className="text-xs text-purple-300">고객 관리</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* 빠른 액션 버튼 */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -1229,14 +1262,26 @@ export function ResultPage() {
                     <h4 className="font-medium text-white text-sm">분석 이력</h4>
                     <p className="text-xs text-slate-400">저장된 분석 결과 보기</p>
                   </button>
-                  <button
-                    onClick={() => navigate('/expert/subscription')}
-                    className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 border border-purple-500/30 rounded-xl p-4 text-left transition-colors"
-                  >
-                    <Crown className="w-5 h-5 text-purple-400 mb-2" />
-                    <h4 className="font-medium text-white text-sm">전문가 모드</h4>
-                    <p className="text-xs text-slate-400">고전 9종 심층 분석</p>
-                  </button>
+                  {!isExpertMode && (
+                    <button
+                      onClick={() => navigate('/expert/subscription')}
+                      className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 border border-purple-500/30 rounded-xl p-4 text-left transition-colors"
+                    >
+                      <Crown className="w-5 h-5 text-purple-400 mb-2" />
+                      <h4 className="font-medium text-white text-sm">사주가 모드</h4>
+                      <p className="text-xs text-slate-400">고전 9종 심층 분석</p>
+                    </button>
+                  )}
+                  {isExpertMode && (
+                    <button
+                      onClick={() => navigate('/expert')}
+                      className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 border border-purple-500/30 rounded-xl p-4 text-left transition-colors"
+                    >
+                      <Crown className="w-5 h-5 text-purple-400 mb-2" />
+                      <h4 className="font-medium text-white text-sm">사주가 대시보드</h4>
+                      <p className="text-xs text-slate-400">전체 기능 보기</p>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

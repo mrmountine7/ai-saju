@@ -456,7 +456,7 @@ export default function ClassicsInfoPage() {
           </p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-400 font-medium">사주로 · 고전의 지혜</span>
+            <span className="text-sm text-amber-400 font-medium">天乙貴人 · 고전의 지혜</span>
             <Sparkles className="w-4 h-4 text-amber-400" />
           </div>
         </div>

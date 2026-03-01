@@ -638,7 +638,7 @@ export function StoragePage() {
                 className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
               >
                 <Sparkles className="w-5 h-5 text-amber-400" />
-                사주로 풀이
+                天乙貴人 풀이
               </button>
               
               <button 

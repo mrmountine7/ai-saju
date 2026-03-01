@@ -547,7 +547,7 @@ export function ResultPage() {
       kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `${currentProfile?.name}님의 사주로 분석 결과`,
+          title: `${currentProfile?.name}님의 天乙貴人 분석 결과`,
           description: analysisResult?.easy_explanation?.slice(0, 100) + '...' || '사주 분석 결과를 확인해보세요!',
           imageUrl: 'https://aisaju.com/og-image.png',
           link: {
@@ -854,7 +854,7 @@ export function ResultPage() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <h1 className="text-2xl font-bold text-white">
-              {currentProfile.name}님의 사주로 풀이
+              {currentProfile.name}님의 天乙貴人 풀이
             </h1>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
               mode === 'beginner' ? 'bg-white text-amber-600 border border-amber-400' :
@@ -1219,7 +1219,7 @@ export function ResultPage() {
                   )}
                 </div>
 
-                {/* 사주가 모드 전용 기능 */}
+                {/* 전문가 모드 전용 기능 */}
                 {isExpertMode && (
                   <div className="bg-gradient-to-r from-purple-900/30 to-indigo-900/30 rounded-xl p-4 border border-purple-500/30">
                     <h4 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
@@ -1268,7 +1268,7 @@ export function ResultPage() {
                       className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 hover:from-purple-500/20 hover:to-indigo-500/20 border border-purple-500/30 rounded-xl p-4 text-left transition-colors"
                     >
                       <Crown className="w-5 h-5 text-purple-400 mb-2" />
-                      <h4 className="font-medium text-white text-sm">사주가 모드</h4>
+                      <h4 className="font-medium text-white text-sm">전문가 모드</h4>
                       <p className="text-xs text-slate-400">고전 9종 심층 분석</p>
                     </button>
                   )}
@@ -1772,7 +1772,7 @@ export function ResultPage() {
                   onClick={async () => {
                     try {
                       await navigator.share({
-                        title: `${currentProfile?.name}님의 사주로 분석`,
+                        title: `${currentProfile?.name}님의 天乙貴人 분석`,
                         text: '사주 분석 결과를 확인해보세요!',
                         url: window.location.href,
                       });

@@ -22,14 +22,14 @@ export function TermsPage() {
         <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-5 h-5 text-amber-400" />
-            <h2 className="text-white font-semibold">사주로 서비스 이용약관</h2>
+            <h2 className="text-white font-semibold">天乙貴人 서비스 이용약관</h2>
           </div>
 
           <div className="space-y-6 text-sm text-slate-300 leading-relaxed">
             <section>
               <h3 className="text-white font-medium mb-2">제1조 (목적)</h3>
               <p>
-                본 약관은 사주로 서비스(이하 "서비스")를 제공하는 회사(이하 "회사")와 
+                본 약관은 天乙貴人 서비스(이하 "서비스")를 제공하는 회사(이하 "회사")와 
                 이용자 간의 서비스 이용에 관한 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
             </section>

@@ -31,6 +31,7 @@ import { PrivacyPage } from '@/app/components/PrivacyPage';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AnalysisModeProvider } from '@/contexts/AnalysisModeContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { initDeviceId, getDeviceInfo } from '@/lib/device-id';
 
 // 기기 ID 초기화 컴포넌트
@@ -71,6 +72,7 @@ export default function App() {
       <DeviceInitializer>
         <AuthProvider>
           <AnalysisModeProvider>
+          <ThemeProvider>
             <ToastProvider>
               <NotificationProvider>
                 <SubscriptionProvider>
@@ -143,6 +145,7 @@ export default function App() {
                 </SubscriptionProvider>
               </NotificationProvider>
             </ToastProvider>
+          </ThemeProvider>
           </AnalysisModeProvider>
         </AuthProvider>
       </DeviceInitializer>

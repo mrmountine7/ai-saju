@@ -113,7 +113,7 @@ export function MenuPage() {
               <Database className="w-6 h-6 text-amber-400" />
             </div>
             <div>
-              <p className="text-white font-medium">사주로 분석</p>
+              <p className="text-white font-medium">天乙貴人 분석</p>
               <p className="text-amber-400 text-sm">9종 고전문헌 · 3,238개 청크</p>
             </div>
           </div>

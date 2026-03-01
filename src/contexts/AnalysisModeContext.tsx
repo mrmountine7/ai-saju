@@ -34,8 +34,8 @@ export const ANALYSIS_MODES: Record<AnalysisMode, AnalysisModeInfo> = {
   },
   expert: {
     id: 'expert',
-    name: '사주가 모드',
-    description: '원문 검색 및 고객 관리',
+    name: '전문가 모드',
+    description: '9대 고전문헌 원문 기반 감정',
     features: [
       '원문/풀이 검색 (저장/즐겨찾기)',
       'AI 질의응답 (저장/즐겨찾기)',

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { useAnalysisMode, ANALYSIS_MODES, type AnalysisMode } from '@/contexts/AnalysisModeContext';
+import { SplashScreen } from './SplashScreen';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 // 지원 언어 목록 (확장 가능)
 const SUPPORTED_LANGUAGES = [
@@ -28,11 +30,32 @@ export function LandingPage() {
   const [selectedLanguage, setSelectedLanguage] = useState('ko');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<AnalysisMode | null>(null);
+  const [showSplash, setShowSplash] = useState<AnalysisMode | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowStats(true), 500);
     return () => clearTimeout(timer);
   }, []);
+
+  // 모드 선택 시 스플래시 표시 후 이동
+  const handleModeSelect = (selectedMode: AnalysisMode) => {
+    setMode(selectedMode);
+    setShowSplash(selectedMode);
+  };
+
+  // 스플래시 화면이 표시 중인 경우
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        mode={showSplash} 
+        duration={3000}
+        onComplete={() => {
+          setShowSplash(null);
+          navigate('/storage');
+        }}
+      />
+    );
+  }
 
   // 언어 변경 핸들러
   const handleLanguageChange = (langCode: string) => {
@@ -192,9 +215,10 @@ export function LandingPage() {
             </div>
             
             <div className="mb-4">
-              <h1 className="text-6xl md:text-8xl font-bold text-white" style={{ fontFamily: 'ChosunCentennial, serif' }}>
-                사주로
+              <h1 className="text-5xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Klee One', serif" }}>
+                天乙貴人
               </h1>
+              <p className="text-amber-400 text-sm mt-2 tracking-widest">ORACLE v1.0</p>
             </div>
             
             <p className="text-xl text-slate-300 mb-2">
@@ -202,30 +226,31 @@ export function LandingPage() {
             </p>
           </div>
 
-          {/* Mode Selection - 3가지 모드 */}
+          {/* Mode Selection - 3가지 모드 (인트로 디자인 적용) */}
           <div className="mb-8">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-              {/* 일반 모드 - 흰색 바탕 */}
+              {/* 일반 모드 - 로즈골드 (#BC8F8F) */}
               <button 
-                onClick={() => {
-                  setMode('beginner');
-                  navigate('/storage');
-                }}
+                onClick={() => handleModeSelect('beginner')}
                 onMouseEnter={() => setHoveredMode('beginner')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 ${
+                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'beginner' 
-                    ? 'bg-white text-slate-900 shadow-lg shadow-white/20 border-2 border-amber-400' 
-                    : 'bg-white/90 text-slate-800 border border-slate-300 hover:border-amber-400'
+                    ? 'shadow-lg' 
+                    : 'border-opacity-40 hover:border-opacity-100'
                 }`}
+                style={{
+                  background: mode === 'beginner' ? MODE_THEMES.beginner.bgGradient : 'rgba(188, 143, 143, 0.1)',
+                  borderColor: MODE_THEMES.beginner.primary,
+                }}
               >
-                <Star className={`w-8 h-8 mb-3 ${mode === 'beginner' ? 'text-amber-500' : 'text-amber-400'}`} />
-                <span className="font-semibold text-lg text-slate-800">일반 모드</span>
-                <span className={`text-xs mt-1 ${mode === 'beginner' ? 'text-amber-600' : 'text-slate-500'}`}>
+                <Star className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.beginner.primary }} />
+                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.beginner.primary }}>일반 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.beginner.textSecondary }}>
                   쉽고 부드러운 표현
                 </span>
                 {mode === 'beginner' && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.beginner.primary }}>
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
@@ -233,27 +258,28 @@ export function LandingPage() {
                 )}
               </button>
 
-              {/* 고급 모드 - 회색 바탕 */}
+              {/* 고급 모드 - 퍼플 (#9370DB) */}
               <button 
-                onClick={() => {
-                  setMode('advanced');
-                  navigate('/storage');
-                }}
+                onClick={() => handleModeSelect('advanced')}
                 onMouseEnter={() => setHoveredMode('advanced')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 ${
+                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'advanced' 
-                    ? 'bg-slate-500 text-white shadow-lg shadow-slate-500/30 border-2 border-blue-400' 
-                    : 'bg-slate-400/90 text-white border border-slate-500 hover:border-blue-400'
+                    ? 'shadow-lg' 
+                    : 'border-opacity-40 hover:border-opacity-100'
                 }`}
+                style={{
+                  background: mode === 'advanced' ? MODE_THEMES.advanced.bgGradient : 'rgba(147, 112, 219, 0.1)',
+                  borderColor: MODE_THEMES.advanced.primary,
+                }}
               >
-                <TrendingUp className={`w-8 h-8 mb-3 ${mode === 'advanced' ? 'text-blue-300' : 'text-blue-200'}`} />
-                <span className="font-semibold text-lg">고급 모드</span>
-                <span className={`text-xs mt-1 ${mode === 'advanced' ? 'text-blue-200' : 'text-slate-200'}`}>
+                <TrendingUp className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.advanced.primary }} />
+                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.advanced.primary }}>고급 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.advanced.textSecondary }}>
                   명리 전문 용어 사용
                 </span>
                 {mode === 'advanced' && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.advanced.primary }}>
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
@@ -261,27 +287,28 @@ export function LandingPage() {
                 )}
               </button>
 
-              {/* 사주가 모드 */}
+              {/* 전문가 모드 - 골드 (#D4AF37) */}
               <button 
-                onClick={() => {
-                  setMode('expert');
-                  navigate('/storage');
-                }}
+                onClick={() => handleModeSelect('expert')}
                 onMouseEnter={() => setHoveredMode('expert')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 ${
+                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'expert' 
-                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/30' 
-                    : 'bg-slate-800/80 text-white border border-slate-700 hover:border-purple-500/50'
+                    ? 'shadow-lg' 
+                    : 'border-opacity-40 hover:border-opacity-100'
                 }`}
+                style={{
+                  background: mode === 'expert' ? MODE_THEMES.expert.bgGradient : 'rgba(212, 175, 55, 0.1)',
+                  borderColor: MODE_THEMES.expert.primary,
+                }}
               >
-                <Crown className={`w-8 h-8 mb-3 ${mode === 'expert' ? 'text-white' : 'text-purple-400'}`} />
-                <span className="font-semibold text-lg">사주가 모드</span>
-                <span className={`text-xs mt-1 ${mode === 'expert' ? 'text-purple-100' : 'text-slate-400'}`}>
+                <Crown className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.expert.primary }} />
+                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.expert.primary }}>전문가 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.expert.textSecondary }}>
                   원문 검색 · 고객 관리
                 </span>
                 {mode === 'expert' && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.expert.primary }}>
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
@@ -553,7 +580,7 @@ export function LandingPage() {
             </button>
             <span className="text-slate-700">|</span>
             <button 
-              onClick={() => window.location.href = 'mailto:support@sajuro.com'}
+              onClick={() => window.location.href = 'mailto:support@tianyiguiren.com'}
               className="hover:text-amber-400 transition-colors"
             >
               고객센터
@@ -561,7 +588,7 @@ export function LandingPage() {
           </div>
           
           <div className="text-center text-sm text-slate-600">
-            <p>© 2026 사주로. All rights reserved.</p>
+            <p>© 2026 天乙貴人. All rights reserved.</p>
           </div>
         </div>
       </footer>

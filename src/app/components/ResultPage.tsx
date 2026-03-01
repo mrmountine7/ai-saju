@@ -547,7 +547,7 @@ export function ResultPage() {
       kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `${currentProfile?.name}님의 AI 사주 분석 결과`,
+          title: `${currentProfile?.name}님의 사주로 분석 결과`,
           description: analysisResult?.easy_explanation?.slice(0, 100) + '...' || '사주 분석 결과를 확인해보세요!',
           imageUrl: 'https://aisaju.com/og-image.png',
           link: {
@@ -764,7 +764,7 @@ export function ResultPage() {
             <Loader2 className="w-16 h-16 animate-spin text-amber-400 mx-auto" />
             <Database className="w-6 h-6 text-amber-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
           </div>
-          <p className="text-white mt-6 font-medium">사주 원국 계산 중...</p>
+          <p className="text-white mt-6 font-medium">정밀한 사주명리 해석으로 인하여 시간이 다소 지연될 수 있습니다.</p>
           <p className="text-sm text-slate-400 mt-2">만세력 기반 동적 계산</p>
         </div>
       </div>
@@ -854,7 +854,7 @@ export function ResultPage() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <h1 className="text-2xl font-bold text-white">
-              {currentProfile.name}님의 AI 사주풀이
+              {currentProfile.name}님의 사주로 풀이
             </h1>
             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
               mode === 'beginner' ? 'bg-white text-amber-600 border border-amber-400' :
@@ -1772,7 +1772,7 @@ export function ResultPage() {
                   onClick={async () => {
                     try {
                       await navigator.share({
-                        title: `${currentProfile?.name}님의 AI 사주 분석`,
+                        title: `${currentProfile?.name}님의 사주로 분석`,
                         text: '사주 분석 결과를 확인해보세요!',
                         url: window.location.href,
                       });

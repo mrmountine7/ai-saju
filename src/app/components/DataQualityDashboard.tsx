@@ -142,7 +142,7 @@ const SAMPLE_ISSUES: ValidationIssue[] = [
     issue_type: "broken_markup",
     severity: "warning",
     message: "깨진 마크업: 닫는 괄호만 있음",
-    details: { pattern: r'}}+', match_count: 3 },
+    details: { pattern: '}}+', match_count: 3 },
     suggestion: "마크업 제거 또는 수정 필요"
   },
   {

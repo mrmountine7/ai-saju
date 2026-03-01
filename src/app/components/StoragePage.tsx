@@ -91,8 +91,8 @@ export function StoragePage() {
 
       if (error) throw error;
       setProfiles(data || []);
-    } catch (error) {
-      console.error('프로필 불러오기 오류:', error);
+    } catch (error: any) {
+      console.error('프로필 불러오기 오류:', error?.message || error?.code || JSON.stringify(error));
     } finally {
       setLoading(false);
     }
@@ -104,10 +104,24 @@ export function StoragePage() {
   // 내 프로필 (is_primary가 true인 것)
   const myProfile = profiles.find(p => p.is_primary);
 
-  // 시진 레이블 변환
+  // 시진 레이블 변환 (전통 12시진 체계)
   const getTimeLabel = (birthHour: string) => {
     const timeLabels: Record<string, string> = {
       'unknown': '모름',
+      // 새 시진 체계 (정시법)
+      '00:00': '자시',
+      '02:00': '축시',
+      '04:00': '인시',
+      '06:00': '묘시',
+      '08:00': '진시',
+      '10:00': '사시',
+      '12:00': '오시',
+      '14:00': '미시',
+      '16:00': '신시',
+      '18:00': '유시',
+      '20:00': '술시',
+      '22:00': '해시',
+      // 이전 호환 (기존 데이터용)
       '23:30': '자시',
       '01:30': '축시',
       '03:30': '인시',
@@ -624,7 +638,7 @@ export function StoragePage() {
                 className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
               >
                 <Sparkles className="w-5 h-5 text-amber-400" />
-                AI 사주풀이
+                사주로 풀이
               </button>
               
               <button 

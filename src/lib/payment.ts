@@ -2,6 +2,7 @@
  * 토스페이먼츠 결제 시스템
  * - 결제위젯 SDK v2 사용
  * - 간편결제 (토스페이, 카카오페이, 네이버페이 등) 지원
+ * - 테스트 모드: VITE_TEST_MODE=true 설정 시 결제 우회
  */
 
 import { loadTossPayments, TossPaymentsInstance } from '@tosspayments/tosspayments-sdk';
@@ -11,6 +12,9 @@ const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK
 
 // API Base URL
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+// 테스트 모드 (결제 우회)
+export const IS_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true' || import.meta.env.DEV;
 
 // 결제 상품 타입
 export interface PaymentProduct {
@@ -101,9 +105,23 @@ export interface PaymentRequestOptions {
 
 /**
  * 결제 요청 (카드/간편결제)
+ * - 테스트 모드(IS_TEST_MODE)일 경우 결제 없이 바로 성공 페이지로 이동
  */
 export async function requestPayment(options: PaymentRequestOptions): Promise<void> {
   const { product, userId, userName, userEmail, userPhone, successUrl, failUrl } = options;
+  
+  // 테스트 모드: 결제 없이 성공 처리
+  if (IS_TEST_MODE) {
+    console.log('[TEST MODE] 결제 우회 - 상품:', product.name, '금액:', product.price);
+    const orderId = generateOrderId(product.id, userId);
+    const baseUrl = window.location.origin;
+    const testSuccessUrl = successUrl || `${baseUrl}/payment/success`;
+    // 테스트용 결제 키 생성
+    const testPaymentKey = `test_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    // 성공 페이지로 리다이렉트 (테스트 파라미터 포함)
+    window.location.href = `${testSuccessUrl}?paymentKey=${testPaymentKey}&orderId=${orderId}&amount=${product.price}&testMode=true`;
+    return;
+  }
   
   const tp = await initTossPayments();
   const payment = tp.payment({ customerKey: userId || 'ANONYMOUS' });
@@ -129,12 +147,24 @@ export async function requestPayment(options: PaymentRequestOptions): Promise<vo
 
 /**
  * 간편결제 요청 (토스페이/카카오페이/네이버페이)
+ * - 테스트 모드(IS_TEST_MODE)일 경우 결제 없이 바로 성공 페이지로 이동
  */
 export async function requestEasyPayment(
   options: PaymentRequestOptions,
   easyPayProvider: '토스페이' | '카카오페이' | '네이버페이' | 'PAYCO' | '삼성페이'
 ): Promise<void> {
   const { product, userId, userName, userEmail, successUrl, failUrl } = options;
+  
+  // 테스트 모드: 결제 없이 성공 처리
+  if (IS_TEST_MODE) {
+    console.log('[TEST MODE] 간편결제 우회 - 상품:', product.name, '결제수단:', easyPayProvider);
+    const orderId = generateOrderId(product.id, userId);
+    const baseUrl = window.location.origin;
+    const testSuccessUrl = successUrl || `${baseUrl}/payment/success`;
+    const testPaymentKey = `test_easy_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    window.location.href = `${testSuccessUrl}?paymentKey=${testPaymentKey}&orderId=${orderId}&amount=${product.price}&testMode=true`;
+    return;
+  }
   
   const tp = await initTossPayments();
   const payment = tp.payment({ customerKey: userId || 'ANONYMOUS' });

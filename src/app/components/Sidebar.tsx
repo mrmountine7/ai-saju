@@ -53,7 +53,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <Database className="w-5 h-5 text-amber-400" />
-              <span className="font-bold text-white">AI 사주</span>
+              <span className="font-bold text-white">사주로</span>
             </div>
             <button 
               onClick={onClose}

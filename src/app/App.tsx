@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { LandingPage } from '@/app/components/LandingPage';
 import { StoragePage } from '@/app/components/StoragePage';
 import { AddPage } from '@/app/components/AddPage';
@@ -30,17 +31,51 @@ import { PrivacyPage } from '@/app/components/PrivacyPage';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AnalysisModeProvider } from '@/contexts/AnalysisModeContext';
+import { initDeviceId, getDeviceInfo } from '@/lib/device-id';
+
+// 기기 ID 초기화 컴포넌트
+function DeviceInitializer({ children }: { children: React.ReactNode }) {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const deviceId = await initDeviceId();
+        const info = getDeviceInfo();
+        console.log('[App] 기기 초기화 완료');
+        console.log('[App] Device ID:', deviceId);
+        console.log('[App] Fingerprint:', info.fingerprint);
+      } catch (error) {
+        console.error('[App] 기기 초기화 오류:', error);
+      } finally {
+        setInitialized(true);
+      }
+    };
+    init();
+  }, []);
+
+  if (!initialized) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-white">초기화 중...</div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <AnalysisModeProvider>
-          <ToastProvider>
-            <NotificationProvider>
-              <SubscriptionProvider>
-                <ProfileProvider>
-                  <BrowserRouter>
+      <DeviceInitializer>
+        <AuthProvider>
+          <AnalysisModeProvider>
+            <ToastProvider>
+              <NotificationProvider>
+                <SubscriptionProvider>
+                  <ProfileProvider>
+                    <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/storage" element={<StoragePage />} />
@@ -103,13 +138,14 @@ export default function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-                  </BrowserRouter>
-                </ProfileProvider>
-              </SubscriptionProvider>
-            </NotificationProvider>
-          </ToastProvider>
-        </AnalysisModeProvider>
-      </AuthProvider>
+                    </BrowserRouter>
+                  </ProfileProvider>
+                </SubscriptionProvider>
+              </NotificationProvider>
+            </ToastProvider>
+          </AnalysisModeProvider>
+        </AuthProvider>
+      </DeviceInitializer>
     </ErrorBoundary>
   );
 }

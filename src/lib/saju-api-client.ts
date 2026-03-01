@@ -499,27 +499,40 @@ export async function getMonthlyDailyFortunes(
 // 궁합 API
 // ================================================
 
+export interface CompatibilityPersonInput {
+  name: string;
+  gender: 'male' | 'female';
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute?: number;
+  is_lunar?: boolean;
+}
+
 export interface CompatibilityRequest {
-  person1: {
-    name: string;
-    gender: 'male' | 'female';
-    year: number;
-    month: number;
-    day: number;
-    hour: number;
-    minute?: number;
-    is_lunar?: boolean;
-  };
-  person2: {
-    name: string;
-    gender: 'male' | 'female';
-    year: number;
-    month: number;
-    day: number;
-    hour: number;
-    minute?: number;
-    is_lunar?: boolean;
-  };
+  person1: CompatibilityPersonInput;
+  person2: CompatibilityPersonInput;
+}
+
+// 백엔드 API 요청 형식 (flat structure)
+interface CompatibilityApiRequest {
+  person1_name: string;
+  person1_gender: string;
+  person1_year: number;
+  person1_month: number;
+  person1_day: number;
+  person1_hour: number;
+  person1_minute: number;
+  person1_is_lunar: boolean;
+  person2_name: string;
+  person2_gender: string;
+  person2_year: number;
+  person2_month: number;
+  person2_day: number;
+  person2_hour: number;
+  person2_minute: number;
+  person2_is_lunar: boolean;
 }
 
 export interface CompatibilityResponse {
@@ -546,13 +559,35 @@ export interface CompatibilityResponse {
  */
 export async function analyzeCompatibility(request: CompatibilityRequest): Promise<CompatibilityResponse> {
   try {
+    // 프론트엔드 형식을 백엔드 API 형식으로 변환
+    const apiRequest: CompatibilityApiRequest = {
+      person1_name: request.person1.name,
+      person1_gender: request.person1.gender,
+      person1_year: request.person1.year,
+      person1_month: request.person1.month,
+      person1_day: request.person1.day,
+      person1_hour: request.person1.hour,
+      person1_minute: request.person1.minute ?? 0,
+      person1_is_lunar: request.person1.is_lunar ?? false,
+      person2_name: request.person2.name,
+      person2_gender: request.person2.gender,
+      person2_year: request.person2.year,
+      person2_month: request.person2.month,
+      person2_day: request.person2.day,
+      person2_hour: request.person2.hour,
+      person2_minute: request.person2.minute ?? 0,
+      person2_is_lunar: request.person2.is_lunar ?? false,
+    };
+    
     const response = await fetch(`${API_BASE_URL}/api/saju/compatibility`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
+      body: JSON.stringify(apiRequest),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('궁합 API 응답 오류:', response.status, errorText);
       throw new Error(`API 오류: ${response.status}`);
     }
 

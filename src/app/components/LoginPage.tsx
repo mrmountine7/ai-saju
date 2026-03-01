@@ -51,7 +51,7 @@ export function LoginPage() {
           <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">AI 사주 회원 가입</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">사주로 회원 가입</h2>
           <p className="text-slate-400">
             로그인하고 더 깊이 있는 사주 분석을 받아보세요
           </p>

@@ -291,10 +291,6 @@ export function AddPage() {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-400">명식 {isEditMode ? '수정' : '등록'}</span>
-          </div>
         </div>
 
         {/* Title */}

@@ -104,7 +104,7 @@ export async function generateSajuPDF(result: SajuResult): Promise<void> {
   
   pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(24);
-  pdf.text('AI 사주 분석 리포트', pageWidth / 2, yPosition + 10, { align: 'center' });
+  pdf.text('사주로 분석 리포트', pageWidth / 2, yPosition + 10, { align: 'center' });
   
   yPosition += 25;
   
@@ -250,7 +250,7 @@ export async function generateSajuPDF(result: SajuResult): Promise<void> {
   pdf.setFontSize(8);
   pdf.setTextColor(100, 116, 139);
   pdf.text(
-    `AI 사주 분석 리포트 | 생성일: ${new Date().toLocaleDateString('ko-KR')}`,
+    `사주로 분석 리포트 | 생성일: ${new Date().toLocaleDateString('ko-KR')}`,
     pageWidth / 2,
     yPosition,
     { align: 'center' }

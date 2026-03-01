@@ -9,7 +9,7 @@ import {
   FileText,
   Clock
 } from 'lucide-react';
-import { confirmPayment } from '@/lib/payment';
+import { confirmPayment, IS_TEST_MODE } from '@/lib/payment';
 
 type ResultType = 'success' | 'fail' | 'processing';
 
@@ -23,6 +23,7 @@ export function PaymentResultPage() {
   const amount = searchParams.get('amount');
   const errorCode = searchParams.get('code');
   const errorMessage = searchParams.get('message');
+  const isTestMode = searchParams.get('testMode') === 'true';
   
   const [result, setResult] = useState<ResultType>('processing');
   const [paymentData, setPaymentData] = useState<unknown>(null);
@@ -35,6 +36,19 @@ export function PaymentResultPage() {
       if (errorCode || errorMessage) {
         setResult('fail');
         setError(errorMessage || '결제가 취소되었습니다.');
+        return;
+      }
+
+      // 테스트 모드: 결제 승인 없이 바로 성공 처리
+      if ((IS_TEST_MODE || isTestMode) && paymentKey && orderId && amount) {
+        console.log('[TEST MODE] 결제 승인 우회 - orderId:', orderId, 'amount:', amount);
+        setResult('success');
+        setPaymentData({
+          orderId,
+          amount: parseInt(amount),
+          testMode: true,
+          message: '테스트 모드 결제 성공',
+        });
         return;
       }
 
@@ -62,7 +76,7 @@ export function PaymentResultPage() {
     };
 
     processPayment();
-  }, [paymentKey, orderId, amount, errorCode, errorMessage]);
+  }, [paymentKey, orderId, amount, errorCode, errorMessage, isTestMode]);
 
   // 주문 ID에서 상품 정보 추출
   const getProductName = () => {

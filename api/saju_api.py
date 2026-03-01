@@ -3496,6 +3496,13 @@ class CompatibilityItem(BaseModel):
     details: List[str]
 
 
+class CompatibilityDetailedAnalysis(BaseModel):
+    """세부 궁합 분석"""
+    title: str
+    content: str
+    importance: str  # "high", "medium", "low"
+
+
 class CompatibilityResponse(BaseModel):
     """궁합 분석 응답"""
     success: bool
@@ -3509,12 +3516,20 @@ class CompatibilityResponse(BaseModel):
     weaknesses: List[str]
     advice: str
     classical_references: List[SearchResult]
+    # 확장된 세부 분석
+    detailed_analyses: List[CompatibilityDetailedAnalysis] = []
+    hannan_analysis: Optional[str] = None  # 한난조습 분석
+    jiji_interactions: List[str] = []  # 지지 충합 관계
+    jijanggan_analysis: List[str] = []  # 지장간 합 분석
+    sipsin_analysis: List[str] = []  # 십신 상호작용
+    pillar_influences: List[str] = []  # 주별 영향 분석
+    ai_synthesis: Optional[str] = None  # AI 종합 해석
     error: Optional[str] = None
 
 
 @app.post("/api/saju/compatibility", response_model=CompatibilityResponse)
 async def analyze_compatibility(request: CompatibilityRequest):
-    """궁합 분석 API"""
+    """궁합 분석 API - 전문가 수준 세밀 분석"""
     start_time = time.time()
     
     try:
@@ -3545,7 +3560,12 @@ async def analyze_compatibility(request: CompatibilityRequest):
             use_solar_time=True,
         )
         
-        # 5가지 궁합 분석
+        name1 = request.person1_name or "본인"
+        name2 = request.person2_name or "상대방"
+        
+        # ================================================
+        # 기본 5가지 궁합 분석 (100점 만점)
+        # ================================================
         categories = []
         strengths = []
         weaknesses = []
@@ -3596,62 +3616,138 @@ async def analyze_compatibility(request: CompatibilityRequest):
         elif daeun_result.score <= 6:
             weaknesses.extend(daeun_result.details[:1])
         
-        # 등급 결정
-        if total_score >= 85:
+        # ================================================
+        # 추가 세밀 분석 (프리미엄)
+        # ================================================
+        detailed_analyses = []
+        jiji_interactions = []
+        jijanggan_analysis = []
+        sipsin_analysis = []
+        pillar_influences = []
+        
+        # 6. 한난조습(寒暖燥濕) 분석 - 기후 균형
+        hannan_analysis = analyze_hannan_joseup_compatibility(info1, info2, name1, name2)
+        if hannan_analysis:
+            detailed_analyses.append(CompatibilityDetailedAnalysis(
+                title="한난조습(寒暖燥濕) 궁합",
+                content=hannan_analysis,
+                importance="high"
+            ))
+        
+        # 7. 지지 충합 관계 상세 분석
+        jiji_interactions = analyze_all_jiji_interactions(info1, info2, name1, name2)
+        
+        # 8. 지장간 합 분석
+        jijanggan_analysis = analyze_jijanggan_compatibility(info1, info2, name1, name2)
+        
+        # 9. 십신 상호작용 분석
+        sipsin_analysis = analyze_sipsin_compatibility(info1, info2, name1, name2)
+        
+        # 10. 주별(년월일시) 영향 분석
+        pillar_influences = analyze_pillar_influences(info1, info2, name1, name2)
+        
+        # ================================================
+        # 등급 결정 (한난조습 등 추가 요소 반영)
+        # ================================================
+        bonus_score = 0
+        if hannan_analysis and ("매우 좋" in hannan_analysis or "최상" in hannan_analysis or "완벽" in hannan_analysis):
+            bonus_score += 5
+        if len([j for j in jiji_interactions if "합" in j and "충" not in j]) >= 2:
+            bonus_score += 3
+        if len([j for j in jijanggan_analysis if "합" in j]) >= 1:
+            bonus_score += 2
+        
+        adjusted_score = min(total_score + bonus_score, 100)
+        
+        if adjusted_score >= 90:
             grade = "천생연분"
             emoji = "💕"
-            summary = "두 분은 천생연분입니다! 서로를 보완하고 성장시키는 최상의 궁합입니다."
-        elif total_score >= 70:
+            summary = f"{name1}님과 {name2}님은 천생연분 중에서도 최상의 궁합입니다! 한난조습의 조화, 지지의 합, 지장간의 합이 어우러진 드문 인연입니다."
+        elif adjusted_score >= 80:
+            grade = "천생연분"
+            emoji = "💕"
+            summary = f"{name1}님과 {name2}님은 천생연분입니다! 서로를 완벽하게 보완하고 성장시키는 최상의 궁합입니다."
+        elif adjusted_score >= 70:
             grade = "좋은 인연"
             emoji = "💗"
-            summary = "좋은 궁합입니다. 서로 노력하면 행복한 관계를 유지할 수 있습니다."
-        elif total_score >= 55:
+            summary = f"좋은 궁합입니다. 서로 노력하면 행복한 관계를 유지할 수 있습니다."
+        elif adjusted_score >= 55:
             grade = "보통"
             emoji = "💛"
-            summary = "평범한 궁합입니다. 서로 이해하고 배려하면 좋은 관계가 될 수 있습니다."
-        elif total_score >= 40:
+            summary = f"평범한 궁합입니다. 서로 이해하고 배려하면 좋은 관계가 될 수 있습니다."
+        elif adjusted_score >= 40:
             grade = "노력 필요"
             emoji = "💔"
-            summary = "다소 맞지 않는 부분이 있습니다. 서로의 차이를 인정하고 노력이 필요합니다."
+            summary = f"다소 맞지 않는 부분이 있습니다. 서로의 차이를 인정하고 노력이 필요합니다."
         else:
             grade = "주의 필요"
             emoji = "⚠️"
-            summary = "궁합이 좋지 않습니다. 신중한 결정이 필요합니다."
+            summary = f"궁합이 좋지 않습니다. 신중한 결정이 필요합니다."
         
-        # 고전 문헌 검색
+        # ================================================
+        # 고전 문헌 검색 (확장)
+        # ================================================
         search_results = []
         try:
             searcher = get_searcher()
-            query = f"궁합 {info1.day_gan_ko}일간 {info2.day_gan_ko}일간 배우자"
-            results = searcher.search(query, top_k=2, min_score=0.3, mode="D")
-            for r in results:
-                search_results.append(SearchResult(
-                    book_title=r.book_title,
-                    title=r.title,
-                    content=r.content[:400] if len(r.content) > 400 else r.content,
-                    score=r.final_score,
-                    matched_patterns=list(r.matched_patterns) if r.matched_patterns else [],
-                ))
+            queries = [
+                f"궁합 {info1.day_gan_ko}일간 {info2.day_gan_ko}일간 배우자",
+                f"부부 궁합 천간합 지지합",
+                f"한난조습 조후 궁합",
+            ]
+            for query in queries:
+                results = searcher.search(query, top_k=2, min_score=0.3, mode="D")
+                for r in results:
+                    if not any(sr.title == r.title for sr in search_results):
+                        search_results.append(SearchResult(
+                            book_title=r.book_title,
+                            title=r.title,
+                            content=r.content[:500] if len(r.content) > 500 else r.content,
+                            score=r.final_score,
+                            matched_patterns=list(r.matched_patterns) if r.matched_patterns else [],
+                        ))
         except Exception as e:
             print(f"궁합 검색 오류: {e}")
         
+        # ================================================
+        # AI 종합 해석 생성
+        # ================================================
+        ai_synthesis = None
+        try:
+            ai_synthesis = await generate_compatibility_ai_synthesis(
+                info1, info2, name1, name2,
+                adjusted_score, grade,
+                hannan_analysis, jiji_interactions, 
+                jijanggan_analysis, sipsin_analysis,
+                pillar_influences
+            )
+        except Exception as e:
+            print(f"AI 종합 해석 오류: {e}")
+        
         # 조언 생성
-        advice = generate_compatibility_advice(total_score, strengths, weaknesses)
+        advice = generate_compatibility_advice(adjusted_score, strengths, weaknesses)
         
         processing_time = int((time.time() - start_time) * 1000)
         
         return CompatibilityResponse(
             success=True,
             processing_time_ms=processing_time,
-            total_score=total_score,
+            total_score=adjusted_score,
             grade=grade,
             emoji=emoji,
             summary=summary,
             categories=categories,
-            strengths=strengths[:3],
-            weaknesses=weaknesses[:3],
+            strengths=strengths[:5],
+            weaknesses=weaknesses[:5],
             advice=advice,
-            classical_references=search_results,
+            classical_references=search_results[:5],
+            detailed_analyses=detailed_analyses,
+            hannan_analysis=hannan_analysis,
+            jiji_interactions=jiji_interactions,
+            jijanggan_analysis=jijanggan_analysis,
+            sipsin_analysis=sipsin_analysis,
+            pillar_influences=pillar_influences,
+            ai_synthesis=ai_synthesis,
         )
         
     except Exception as e:
@@ -3965,6 +4061,350 @@ def generate_compatibility_advice(total_score: int, strengths: list, weaknesses:
         return "맞지 않는 부분이 있습니다. 서로의 차이를 이해하고 배려가 필요합니다. 갈등 시 감정적 대응을 피하세요."
     else:
         return "궁합이 좋지 않습니다. 관계를 유지하려면 특별한 노력이 필요합니다. 신중한 결정을 권합니다."
+
+
+# ================================================
+# 6-2. 상세 궁합 분석 API (LLM 동적 생성, 하드코딩 없음)
+# ================================================
+
+class DetailedCompatibilityRequest(BaseModel):
+    """상세 궁합 분석 요청"""
+    person1_profile_id: str
+    person1_name: str
+    person1_gender: str
+    person1_year: int
+    person1_month: int
+    person1_day: int
+    person1_hour: int = 12
+    person1_saju_result: Optional[Dict[str, Any]] = None
+    
+    person2_profile_id: str
+    person2_name: str
+    person2_gender: str
+    person2_year: int
+    person2_month: int
+    person2_day: int
+    person2_hour: int = 12
+    person2_saju_result: Optional[Dict[str, Any]] = None
+    
+    analysis_level: str = "easy"
+
+
+class CompatibilitySectionModel(BaseModel):
+    """궁합 섹션"""
+    title: str
+    score: int
+    maxScore: int
+    summary: str
+    details: List[str]
+    easyExplanation: str
+
+
+class DetailedCompatibilityResponse(BaseModel):
+    """상세 궁합 분석 응답"""
+    success: bool
+    totalScore: int
+    grade: str
+    summary: str
+    sections: Dict[str, CompatibilitySectionModel]
+    strengths: List[str]
+    cautions: List[str]
+    advice: str
+    classicalRefs: List[SearchResult] = []
+    error: Optional[str] = None
+
+
+@app.post("/api/saju/compatibility/detailed", response_model=DetailedCompatibilityResponse)
+async def analyze_compatibility_detailed(request: DetailedCompatibilityRequest):
+    """
+    상세 궁합 분석 API - 저장된 사주풀이 결과를 활용하여 LLM으로 동적 생성
+    하드코딩 없이 모든 해석을 AI가 생성
+    """
+    start_time = time.time()
+    
+    try:
+        calc = get_calculator()
+        
+        # 두 사람의 사주 계산
+        info1 = calc.calculate(
+            year=request.person1_year,
+            month=request.person1_month,
+            day=request.person1_day,
+            hour=request.person1_hour,
+            minute=0,
+            is_lunar=False,
+            gender=request.person1_gender,
+            name=request.person1_name,
+            use_solar_time=True,
+        )
+        
+        info2 = calc.calculate(
+            year=request.person2_year,
+            month=request.person2_month,
+            day=request.person2_day,
+            hour=request.person2_hour,
+            minute=0,
+            is_lunar=False,
+            gender=request.person2_gender,
+            name=request.person2_name,
+            use_solar_time=True,
+        )
+        
+        name1 = request.person1_name
+        name2 = request.person2_name
+        analysis_level = request.analysis_level
+        
+        # 저장된 사주풀이 결과
+        saju1 = request.person1_saju_result or {}
+        saju2 = request.person2_saju_result or {}
+        
+        # 고전 문헌 검색
+        searcher = get_searcher()
+        classical_refs = []
+        search_queries = [
+            f"궁합 {info1.day_gan_ko}일간 {info2.day_gan_ko}일간",
+            f"부부 궁합 한난조습",
+            f"배우자 인연 합충",
+            f"천간합 지지합 궁합",
+        ]
+        
+        all_search_context = []
+        for query in search_queries:
+            try:
+                results = searcher.search(query, top_k=3, min_score=0.25, mode="D")
+                for r in results:
+                    if not any(cr.title == r.title for cr in classical_refs):
+                        classical_refs.append(SearchResult(
+                            book_title=r.book_title,
+                            title=r.title,
+                            content=r.content[:800] if len(r.content) > 800 else r.content,
+                            score=r.final_score,
+                            matched_patterns=list(r.matched_patterns) if r.matched_patterns else [],
+                        ))
+                        all_search_context.append(f"[{r.book_title} - {r.title}]\n{r.content[:600]}")
+            except Exception as e:
+                print(f"검색 오류: {e}")
+        
+        search_context = "\n\n".join(all_search_context[:8])
+        
+        # 사주 정보 문자열 생성
+        def format_saju_info(info, saju_result, name):
+            pillars = info.pillars
+            saju_str = f"{pillars['year']['gan']}{pillars['year']['zhi']} {pillars['month']['gan']}{pillars['month']['zhi']} {pillars['day']['gan']}{pillars['day']['zhi']} {pillars['hour']['gan']}{pillars['hour']['zhi']}"
+            
+            result = f"""
+【{name}님 사주 정보】
+- 사주팔자: {saju_str}
+- 일간(日干): {info.day_gan_ko} ({GAN_WUXING.get(info.day_gan, '')}행)
+- 년주: {pillars['year']['gan']}{pillars['year']['zhi']} ({ZHI_KO_MAP.get(pillars['year']['zhi'], '')})
+- 월주: {pillars['month']['gan']}{pillars['month']['zhi']} ({ZHI_KO_MAP.get(pillars['month']['zhi'], '')})
+- 일주: {pillars['day']['gan']}{pillars['day']['zhi']} ({ZHI_KO_MAP.get(pillars['day']['zhi'], '')})
+- 시주: {pillars['hour']['gan']}{pillars['hour']['zhi']} ({ZHI_KO_MAP.get(pillars['hour']['zhi'], '')})
+"""
+            
+            if saju_result:
+                if saju_result.get('synthesis'):
+                    result += f"\n- 기존 사주풀이 요약: {saju_result.get('synthesis', '')[:500]}"
+                if saju_result.get('interpretation'):
+                    interp = saju_result.get('interpretation', {})
+                    if isinstance(interp, dict):
+                        if interp.get('personality'):
+                            result += f"\n- 성격: {interp.get('personality', '')[:200]}"
+                        if interp.get('relationships'):
+                            result += f"\n- 대인관계: {interp.get('relationships', '')[:200]}"
+            
+            return result
+        
+        saju1_info = format_saju_info(info1, saju1, name1)
+        saju2_info = format_saju_info(info2, saju2, name2)
+        
+        # 분석 레벨에 따른 프롬프트 스타일
+        if analysis_level == "easy":
+            style_instruction = """
+【작성 스타일】
+- 일반인이 쉽게 이해할 수 있도록 따뜻하고 친근하게 설명
+- 전문 용어는 괄호 안에 쉬운 설명 추가
+- 희망적이고 긍정적인 톤 유지
+- 구체적인 예시와 비유 사용
+"""
+        elif analysis_level == "detailed":
+            style_instruction = """
+【작성 스타일】
+- 명리학 전문 용어 사용 (한자 병기)
+- 이론적 근거와 함께 상세 분석
+- 객관적이고 균형 잡힌 시각
+"""
+        else:
+            style_instruction = """
+【작성 스타일】
+- 최고 수준의 학술적 분석
+- 모든 명리학 용어와 고전 인용 포함
+- 매우 상세하고 깊이 있는 해석
+"""
+        
+        # LLM 프롬프트 - 전체 궁합 분석을 한 번에 요청
+        llm_prompt = f"""당신은 중국 최고의 사주명리학 대가입니다. 두 사람의 궁합을 깊이 있게 분석해주세요.
+
+{saju1_info}
+
+{saju2_info}
+
+【참고 고전 문헌】
+{search_context}
+
+{style_instruction}
+
+다음 7개 영역에 대해 각각 상세 분석해주세요. 반드시 JSON 형식으로 응답하세요.
+
+1. **overall (종합궁합)**: 두 사람의 전체적인 인연과 궁합 총평
+2. **hannan (한난조습)**: 두 사람의 기후/계절 조화 분석 (寒暖燥濕)
+3. **chungHap (합충형파)**: 천간합, 지지육합, 충, 형, 파 관계 분석
+4. **jijanggan (지장간)**: 지지 속 숨은 천간의 합 분석
+5. **sipsin (십신관계)**: 두 사람이 서로에게 주는 십신 영향
+6. **yongshin (용신보완)**: 서로의 용신을 보완하는지 분석
+7. **daeun (대운조화)**: 대운 흐름의 조화
+
+JSON 형식:
+{{
+  "totalScore": 0-100 사이 점수,
+  "grade": "천생연분/좋은 인연/보통/노력 필요/주의 필요" 중 하나,
+  "summary": "전체 궁합 요약 (100자 이내)",
+  "sections": {{
+    "overall": {{
+      "title": "종합 궁합",
+      "score": 0-100,
+      "maxScore": 100,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", "세부내용2", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "hannan": {{
+      "title": "한난조습(寒暖燥濕) 궁합",
+      "score": 0-20,
+      "maxScore": 20,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "chungHap": {{
+      "title": "합충형파(合沖刑破) 관계",
+      "score": 0-25,
+      "maxScore": 25,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "jijanggan": {{
+      "title": "지장간(支藏干) 합",
+      "score": 0-15,
+      "maxScore": 15,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "sipsin": {{
+      "title": "십신(十神) 상호작용",
+      "score": 0-15,
+      "maxScore": 15,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "yongshin": {{
+      "title": "용신(用神) 보완 관계",
+      "score": 0-15,
+      "maxScore": 15,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }},
+    "daeun": {{
+      "title": "대운(大運) 조화",
+      "score": 0-10,
+      "maxScore": 10,
+      "summary": "한 줄 요약",
+      "details": ["세부내용1", ...],
+      "easyExplanation": "쉬운 설명 (200자 이상)"
+    }}
+  }},
+  "strengths": ["좋은점1", "좋은점2", ...],
+  "cautions": ["주의점1", "주의점2", ...],
+  "advice": "두 분을 위한 조언 (200자 이상)"
+}}
+
+중요: 
+- 각 섹션의 easyExplanation은 반드시 200자 이상 상세하게 작성
+- 실제 두 사람의 사주를 분석한 내용으로 작성
+- 고전 문헌 내용을 참고하여 근거 있는 분석
+- JSON만 출력하고 다른 텍스트 없이 응답
+"""
+        
+        # LLM 호출
+        llm = get_llm_client()
+        response = llm.chat.completions.create(
+            model=LLM_MODEL,
+            messages=[{"role": "user", "content": llm_prompt}],
+            max_tokens=4000,
+            temperature=0.7,
+        )
+        
+        llm_result = response.choices[0].message.content.strip()
+        
+        # JSON 파싱
+        try:
+            # JSON 블록 추출
+            if "```json" in llm_result:
+                llm_result = llm_result.split("```json")[1].split("```")[0]
+            elif "```" in llm_result:
+                llm_result = llm_result.split("```")[1].split("```")[0]
+            
+            parsed = json.loads(llm_result)
+        except json.JSONDecodeError as e:
+            print(f"JSON 파싱 오류: {e}")
+            print(f"LLM 응답: {llm_result[:500]}")
+            raise Exception("AI 응답 파싱 오류")
+        
+        # 응답 구성
+        sections = {}
+        for key, section_data in parsed.get("sections", {}).items():
+            sections[key] = CompatibilitySectionModel(
+                title=section_data.get("title", ""),
+                score=section_data.get("score", 0),
+                maxScore=section_data.get("maxScore", 100),
+                summary=section_data.get("summary", ""),
+                details=section_data.get("details", []),
+                easyExplanation=section_data.get("easyExplanation", ""),
+            )
+        
+        processing_time = int((time.time() - start_time) * 1000)
+        print(f"[궁합분석] {name1} & {name2} - 점수: {parsed.get('totalScore', 0)}, 시간: {processing_time}ms")
+        
+        return DetailedCompatibilityResponse(
+            success=True,
+            totalScore=parsed.get("totalScore", 0),
+            grade=parsed.get("grade", "보통"),
+            summary=parsed.get("summary", ""),
+            sections=sections,
+            strengths=parsed.get("strengths", []),
+            cautions=parsed.get("cautions", []),
+            advice=parsed.get("advice", ""),
+            classicalRefs=classical_refs[:6],
+        )
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return DetailedCompatibilityResponse(
+            success=False,
+            totalScore=0,
+            grade="",
+            summary="",
+            sections={},
+            strengths=[],
+            cautions=[],
+            advice="",
+            error=str(e),
+        )
 
 
 # ================================================

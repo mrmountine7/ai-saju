@@ -89,11 +89,11 @@ export function LandingPage() {
     { 
       name: '삼명통회', 
       hanja: '三命通會',
-      chunks: 932, 
+      chunks: 940, 
       chars: '약 120만자',
-      desc: '십신/격국/신살 종합',
-      content: '명대 만민영이 편찬한 명리학 백과사전. 격국, 십신, 신살을 체계적으로 정리',
-      example: '"甲木參天, 脫胎要火" - 갑목이 하늘을 찌르니 화로 설기해야'
+      desc: '십신/격국/신살/혼인 종합',
+      content: '명대 만민영이 편찬한 명리학 백과사전. 혼인문(婚姻門) 수록으로 고전 기반 궁합 해석 지원',
+      example: '"男女婚配, 先觀日主" - 혼인 배합은 먼저 일주를 살펴라'
     },
     { 
       name: '적천수천미', 
@@ -191,35 +191,15 @@ export function LandingPage() {
               국내 최대 고전문헌 DB 기반
             </div>
             
-            <img 
-              src="/ai-saju-logo.png" 
-              alt="AI 사주" 
-              className="h-24 md:h-32 mx-auto mb-4"
-            />
+            <div className="mb-4">
+              <h1 className="text-6xl md:text-8xl font-bold text-white" style={{ fontFamily: 'ChosunCentennial, serif' }}>
+                사주로
+              </h1>
+            </div>
             
             <p className="text-xl text-slate-300 mb-2">
               전통 명리학의 지혜를 AI로 해석하다
             </p>
-            
-            <p className="text-slate-400">
-              9종 고전문헌 · {totalChunks.toLocaleString()}개 지식 청크 · 벡터DB 검색
-            </p>
-          </div>
-
-          {/* Stats Cards */}
-          <div className={`grid grid-cols-3 gap-4 mb-10 transition-all duration-700 ${showStats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-4 text-center border border-slate-700">
-              <div className="text-3xl font-bold text-amber-400 mb-1">9</div>
-              <div className="text-sm text-slate-400">고전문헌</div>
-            </div>
-            <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-4 text-center border border-slate-700">
-              <div className="text-3xl font-bold text-amber-400 mb-1">{totalChunks.toLocaleString()}</div>
-              <div className="text-sm text-slate-400">지식 청크</div>
-            </div>
-            <div className="bg-slate-800/50 backdrop-blur rounded-2xl p-4 text-center border border-slate-700">
-              <div className="text-3xl font-bold text-amber-400 mb-1">24+</div>
-              <div className="text-sm text-slate-400">격국 유형</div>
-            </div>
           </div>
 
           {/* Mode Selection - 3가지 모드 */}
@@ -310,36 +290,6 @@ export function LandingPage() {
               </button>
             </div>
 
-            {/* 모드별 기능 설명 */}
-            <div className="mt-4 max-w-3xl mx-auto">
-              <div className={`bg-slate-800/50 rounded-xl p-4 border transition-all duration-300 ${
-                hoveredMode === 'beginner' ? 'border-amber-500/50' :
-                hoveredMode === 'advanced' ? 'border-blue-500/50' :
-                hoveredMode === 'expert' ? 'border-purple-500/50' :
-                'border-slate-700'
-              }`}>
-                <div className="flex items-center gap-2 mb-3">
-                  {(hoveredMode || mode) === 'beginner' && <Star className="w-4 h-4 text-amber-400" />}
-                  {(hoveredMode || mode) === 'advanced' && <TrendingUp className="w-4 h-4 text-blue-400" />}
-                  {(hoveredMode || mode) === 'expert' && <Crown className="w-4 h-4 text-purple-400" />}
-                  <span className="text-white font-medium text-sm">
-                    {ANALYSIS_MODES[hoveredMode || mode].name} 주요 기능
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {ANALYSIS_MODES[hoveredMode || mode].features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-400">
-                      <div className={`w-1.5 h-1.5 rounded-full ${
-                        (hoveredMode || mode) === 'beginner' ? 'bg-amber-400' :
-                        (hoveredMode || mode) === 'advanced' ? 'bg-blue-400' :
-                        'bg-purple-400'
-                      }`} />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Language Selection */}
@@ -602,16 +552,16 @@ export function LandingPage() {
               결제 안내
             </button>
             <span className="text-slate-700">|</span>
-            <a 
-              href="mailto:support@aisaju.com"
+            <button 
+              onClick={() => window.location.href = 'mailto:support@sajuro.com'}
               className="hover:text-amber-400 transition-colors"
             >
               고객센터
-            </a>
+            </button>
           </div>
           
           <div className="text-center text-sm text-slate-600">
-            <p>© 2026 AI 사주. All rights reserved.</p>
+            <p>© 2026 사주로. All rights reserved.</p>
           </div>
         </div>
       </footer>

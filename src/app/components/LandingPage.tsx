@@ -209,32 +209,96 @@ export function LandingPage() {
         <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-8">
           {/* Logo & Title */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full text-sm mb-6">
-              <Database className="w-4 h-4" />
-              국내 최대 고전문헌 DB 기반
-            </div>
+            <p className="text-gray-400 text-base" style={{ marginTop: '1px', marginBottom: '100px' }}>
+              사주명리 고전문헌(적천수/자평진전/궁통보감 등) 9종, 벡터/그래프 DB 기반 서비스
+            </p>
             
-            <div className="mb-4">
-              <h1 className="text-5xl md:text-7xl font-bold text-white" style={{ fontFamily: "'Klee One', serif" }}>
-                天乙貴人
+            <div className="mb-4 flex flex-col items-center">
+              <div className="relative">
+<h1 
+                className="text-8xl md:text-[10rem] font-black text-white flex flex-col items-center" 
+                style={{ 
+                  fontFamily: "'Klee One', serif",
+                  letterSpacing: '0.1em',
+                  fontWeight: 900,
+                  WebkitFontSmoothing: 'antialiased'
+                }}
+              >
+                <span style={{ display: 'inline-block', transform: 'rotate(-1deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>天</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(-2deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>乙</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(-3deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>貴</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(-4deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>人</span>
               </h1>
-              <p className="text-amber-400 text-sm mt-2 tracking-widest">ORACLE v1.0</p>
+                {/* 붉은색 인장 */}
+                <div 
+                  style={{
+                    position: 'absolute',
+                    bottom: '-20px',
+                    left: '80px',
+                    width: '60px',
+                    height: '60px',
+                    border: '5px solid #c41e3a',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'rotate(-5deg)',
+                    backgroundColor: 'rgba(196, 30, 58, 0.1)'
+                  }}
+                >
+                  <div 
+                    style={{ 
+                      display: 'flex',
+                      flexDirection: 'row',
+                      gap: '2px'
+                    }}
+                  >
+                    <span 
+                      style={{ 
+                        color: '#c41e3a', 
+                        fontSize: '22px', 
+                        fontWeight: 900,
+                        fontFamily: "'Klee One', serif",
+                        writingMode: 'vertical-rl',
+                        textOrientation: 'upright',
+                        lineHeight: '1'
+                      }}
+                    >
+                      適天
+                    </span>
+                    <span 
+                      style={{ 
+                        color: '#c41e3a', 
+                        fontSize: '22px', 
+                        fontWeight: 900,
+                        fontFamily: "'Klee One', serif",
+                        writingMode: 'vertical-rl',
+                        textOrientation: 'upright',
+                        lineHeight: '1'
+                      }}
+                    >
+                      髓印
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-white text-sm tracking-widest" style={{ marginTop: '30px' }}>ver 1.0</p>
             </div>
             
-            <p className="text-xl text-slate-300 mb-2">
-              전통 명리학의 지혜를 AI로 해석하다
+            <p className="text-base text-slate-300 mb-2" style={{ marginTop: '100px', marginBottom: '16px' }}>
+              전통 명리학 이론을 기준으로 당신의 운명을 완벽하게 해석해 드립니다.
             </p>
           </div>
 
           {/* Mode Selection - 3가지 모드 (인트로 디자인 적용) */}
           <div className="mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-lg mx-auto">
               {/* 일반 모드 - 로즈골드 (#BC8F8F) */}
               <button 
                 onClick={() => handleModeSelect('beginner')}
                 onMouseEnter={() => setHoveredMode('beginner')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'beginner' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -244,7 +308,6 @@ export function LandingPage() {
                   borderColor: MODE_THEMES.beginner.primary,
                 }}
               >
-                <Star className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.beginner.primary }} />
                 <span className="font-semibold text-lg" style={{ color: MODE_THEMES.beginner.primary }}>일반 모드</span>
                 <span className="text-xs mt-1" style={{ color: MODE_THEMES.beginner.textSecondary }}>
                   쉽고 부드러운 표현
@@ -263,7 +326,7 @@ export function LandingPage() {
                 onClick={() => handleModeSelect('advanced')}
                 onMouseEnter={() => setHoveredMode('advanced')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'advanced' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -273,7 +336,6 @@ export function LandingPage() {
                   borderColor: MODE_THEMES.advanced.primary,
                 }}
               >
-                <TrendingUp className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.advanced.primary }} />
                 <span className="font-semibold text-lg" style={{ color: MODE_THEMES.advanced.primary }}>고급 모드</span>
                 <span className="text-xs mt-1" style={{ color: MODE_THEMES.advanced.textSecondary }}>
                   명리 전문 용어 사용
@@ -292,7 +354,7 @@ export function LandingPage() {
                 onClick={() => handleModeSelect('expert')}
                 onMouseEnter={() => setHoveredMode('expert')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-5 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'expert' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -302,7 +364,6 @@ export function LandingPage() {
                   borderColor: MODE_THEMES.expert.primary,
                 }}
               >
-                <Crown className="w-8 h-8 mb-3" style={{ color: MODE_THEMES.expert.primary }} />
                 <span className="font-semibold text-lg" style={{ color: MODE_THEMES.expert.primary }}>전문가 모드</span>
                 <span className="text-xs mt-1" style={{ color: MODE_THEMES.expert.textSecondary }}>
                   원문 검색 · 고객 관리

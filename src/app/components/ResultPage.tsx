@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { getDeviceId } from '@/lib/device-id';
 import { generateSajuPDF } from '@/lib/pdf-generator';
 import { useAnalysisMode, getModeApiParam, ANALYSIS_MODES } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 // 천간 한자-한글 매핑
 const ganHanja: Record<string, string> = {
@@ -479,6 +480,7 @@ export function ResultPage() {
   const { selectedProfile, loadProfileById, setSelectedProfile } = useProfile();
   const { isAuthenticated, isPremiumUser, user } = useAuth();
   const { mode, modeInfo, isExpertMode, isAdvancedOrAbove } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   
   const [activeTab, setActiveTab] = useState<'interpretation' | 'questions'>('interpretation');
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -758,7 +760,7 @@ export function ResultPage() {
   // 초기 로딩 화면
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center">
           <div className="relative">
             <Loader2 className="w-16 h-16 animate-spin text-amber-400 mx-auto" />
@@ -774,7 +776,7 @@ export function ResultPage() {
   // 프로필이 없는 경우 (profileId 미지정 또는 잘못된 ID)
   if (!currentProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center px-4">
           <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">분석할 프로필을 선택해주세요</h2>
@@ -793,11 +795,11 @@ export function ResultPage() {
   // API 연결 실패
   if (!apiAvailable) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center px-4">
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">API 서버에 연결할 수 없습니다</h2>
-          <p className="text-slate-400 mb-6">백엔드 서버(포트 8000)가 실행 중인지 확인해주세요.</p>
+          <p className="text-slate-400 mb-6">서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-amber-500 text-white rounded-xl font-medium"
@@ -817,7 +819,7 @@ export function ResultPage() {
   const wuxingBalance = analysisResult?.wuxing_balance || { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -1718,7 +1720,7 @@ export function ResultPage() {
                     <p className="text-white">분석 중 오류가 발생했습니다.</p>
                     <p className="text-sm text-red-400 mt-2">{analysisResult.error}</p>
                     <p className="text-xs text-slate-500 mt-4">
-                      API 서버(포트 8000)가 실행 중인지 확인해주세요.
+                      서버 연결에 문제가 있습니다. 잠시 후 다시 시도해주세요.
                     </p>
                   </div>
                 )

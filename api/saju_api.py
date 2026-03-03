@@ -5,14 +5,14 @@ D모드 벡터 검색 + LLM 분석을 React 프론트엔드에 제공
 
 최적화 내역 (1,000+ 동시접속 대응):
 1. 비동기 HTTP 클라이언트 (httpx) - 논블로킹 LLM 호출
-2. Redis 캐싱 레이어 - 동일 사주 결과 캐시
+2. Redis 캐싱 레이어 - 동일 사주 결과 캐시 (Upstash)
 3. Gunicorn 멀티워커 지원
 4. Rate Limiting - API 과부하 방지
 5. Health check + Prometheus 메트릭 - 모니터링
 
 실행 방법:
   개발: python saju_api.py
-  프로덕션: gunicorn -c gunicorn.conf.py saju_api:app
+  프로덕션 (Railway): uvicorn saju_api:app --host 0.0.0.0 --port $PORT
 """
 
 import sys
@@ -23,13 +23,30 @@ import hashlib
 from pathlib import Path
 from datetime import datetime
 
-# saju-classics-pipeline 경로 추가 (환경변수 로드 전에)
-PIPELINE_PATH = r"C:\AgenticAI_Trainning\그래프DB(고전문헌)구축\saju-classics-pipeline"
-sys.path.insert(0, PIPELINE_PATH)
-os.chdir(PIPELINE_PATH)  # .env 파일 경로 기준
-
+# 환경변수 로드 (.env 파일 또는 Railway 환경변수)
 from dotenv import load_dotenv
-load_dotenv(os.path.join(PIPELINE_PATH, '.env'))
+load_dotenv()  # 현재 디렉토리 또는 상위 디렉토리의 .env 파일 로드
+
+# ================================================
+# DeepSeek 설정 클래스 (외부 의존성 제거)
+# ================================================
+class DeepSeekSettings:
+    """DeepSeek API 설정"""
+    def __init__(self):
+        self.api_key = os.getenv("DEEPSEEK_API_KEY", "")
+        self.base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+        self.model = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+        self.max_tokens = int(os.getenv("DEEPSEEK_MAX_TOKENS", "2000"))
+        self.temperature = float(os.getenv("DEEPSEEK_TEMPERATURE", "0.5"))
+
+class Settings:
+    """전체 설정"""
+    def __init__(self):
+        self.deepseek = DeepSeekSettings()
+        self.supabase_url = os.getenv("SUPABASE_URL", "")
+        self.supabase_key = os.getenv("SUPABASE_KEY", "")
+
+settings = Settings()
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware

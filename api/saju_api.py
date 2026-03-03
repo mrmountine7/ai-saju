@@ -163,30 +163,39 @@ class SajuInfo:
         self.day_gan_desc = GAN_DESC_MAP.get(self.day_gan, '')
         
         # 사주 4주 정보 구성
+        year_gan = result.get('year_stem', '')
+        year_zhi = result.get('year_branch', '')
+        month_gan = result.get('month_stem', '')
+        month_zhi = result.get('month_branch', '')
+        day_gan = result.get('day_stem', '')
+        day_zhi = result.get('day_branch', '')
+        hour_gan = result.get('hour_stem', '')
+        hour_zhi = result.get('hour_branch', '')
+        
         self.pillars = {
             'year': {
-                'gan': result.get('year_stem', ''),
-                'zhi': result.get('year_branch', ''),
-                'ko': [GAN_KO_MAP.get(result.get('year_stem', ''), ''), 
-                       ZHI_KO_MAP.get(result.get('year_branch', ''), '')]
+                'gan': year_gan,
+                'zhi': year_zhi,
+                'zh': year_gan + year_zhi,  # 한자 조합 (庚午 형식)
+                'ko': [GAN_KO_MAP.get(year_gan, ''), ZHI_KO_MAP.get(year_zhi, '')]  # 리스트 형식 유지
             },
             'month': {
-                'gan': result.get('month_stem', ''),
-                'zhi': result.get('month_branch', ''),
-                'ko': [GAN_KO_MAP.get(result.get('month_stem', ''), ''), 
-                       ZHI_KO_MAP.get(result.get('month_branch', ''), '')]
+                'gan': month_gan,
+                'zhi': month_zhi,
+                'zh': month_gan + month_zhi,
+                'ko': [GAN_KO_MAP.get(month_gan, ''), ZHI_KO_MAP.get(month_zhi, '')]
             },
             'day': {
-                'gan': result.get('day_stem', ''),
-                'zhi': result.get('day_branch', ''),
-                'ko': [GAN_KO_MAP.get(result.get('day_stem', ''), ''), 
-                       ZHI_KO_MAP.get(result.get('day_branch', ''), '')]
+                'gan': day_gan,
+                'zhi': day_zhi,
+                'zh': day_gan + day_zhi,
+                'ko': [GAN_KO_MAP.get(day_gan, ''), ZHI_KO_MAP.get(day_zhi, '')]
             },
             'hour': {
-                'gan': result.get('hour_stem', ''),
-                'zhi': result.get('hour_branch', ''),
-                'ko': [GAN_KO_MAP.get(result.get('hour_stem', ''), ''), 
-                       ZHI_KO_MAP.get(result.get('hour_branch', ''), '')]
+                'gan': hour_gan,
+                'zhi': hour_zhi,
+                'zh': hour_gan + hour_zhi,
+                'ko': [GAN_KO_MAP.get(hour_gan, ''), ZHI_KO_MAP.get(hour_zhi, '')]
             }
         }
         
@@ -1294,10 +1303,10 @@ async def generate_llm_analysis(info, search_results: List[SearchResult], analys
     pillars = info.pillars
     saju_info = f"""
 일간: {info.day_gan}({info.day_gan_ko}, {info.day_gan_desc})
-년주: {pillars['year']['zh']}({pillars['year']['ko']})
-월주: {pillars['month']['zh']}({pillars['month']['ko']})
-일주: {pillars['day']['zh']}({pillars['day']['ko']})
-시주: {pillars['hour']['zh']}({pillars['hour']['ko']})
+년주: {pillars['year']['zh']}({''.join(pillars['year']['ko'])})
+월주: {pillars['month']['zh']}({''.join(pillars['month']['ko'])})
+일주: {pillars['day']['zh']}({''.join(pillars['day']['ko'])})
+시주: {pillars['hour']['zh']}({''.join(pillars['hour']['ko'])})
 """
     
     # ================================================================

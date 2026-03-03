@@ -3,6 +3,8 @@ import { ArrowLeft, Search, BookOpen, Star, StarOff, Filter, ChevronDown, Chevro
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface ClassicSearchResult {
   id: string;
@@ -43,6 +45,8 @@ const CLASSIC_BOOKS = [
 export function ExpertClassicsSearch() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState('all');
@@ -86,7 +90,7 @@ export function ExpertClassicsSearch() {
     setSearchResults([]);
     
     try {
-      const response = await fetch('http://localhost:8000/api/classics/search', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/classics/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -188,7 +192,7 @@ export function ExpertClassicsSearch() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center px-4">
           <BookOpen className="w-16 h-16 text-amber-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
@@ -205,7 +209,7 @@ export function ExpertClassicsSearch() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

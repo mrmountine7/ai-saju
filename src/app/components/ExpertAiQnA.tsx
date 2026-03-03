@@ -3,6 +3,8 @@ import { ArrowLeft, Send, Bookmark, BookmarkCheck, Trash2, Loader2, MessageSquar
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface QnAMessage {
   id: string;
@@ -30,6 +32,8 @@ interface SavedConversation {
 export function ExpertAiQnA() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [messages, setMessages] = useState<QnAMessage[]>([]);
@@ -86,7 +90,7 @@ export function ExpertAiQnA() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/expert/qna', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/expert/qna`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -220,7 +224,7 @@ export function ExpertAiQnA() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center px-4">
           <MessageSquare className="w-16 h-16 text-amber-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">로그인이 필요합니다</h2>
@@ -237,7 +241,7 @@ export function ExpertAiQnA() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: theme.bgGradient }}>
       {/* Header */}
       <div className="bg-slate-900/80 backdrop-blur border-b border-slate-700">
         <div className="max-w-4xl mx-auto px-4 py-4">

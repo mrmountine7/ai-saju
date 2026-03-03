@@ -3,6 +3,7 @@ import { ArrowLeft, Heart, Users, Sparkles, ChevronRight, Plus, Brain, BookOpen,
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 import { getDeviceId } from '@/lib/device-id';
 
 interface Profile {
@@ -94,6 +95,7 @@ const gradeStyles: Record<string, { color: string; bg: string; text: string; emo
 export function CompatibilityPage() {
   const navigate = useNavigate();
   const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<Profile | null>(null);
@@ -193,7 +195,7 @@ export function CompatibilityPage() {
     }, 2000);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/saju/compatibility/detailed`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/saju/compatibility/detailed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -396,7 +398,7 @@ export function CompatibilityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

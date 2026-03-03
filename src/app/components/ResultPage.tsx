@@ -766,7 +766,8 @@ export function ResultPage() {
             <Loader2 className="w-16 h-16 animate-spin text-amber-400 mx-auto" />
             <Database className="w-6 h-6 text-amber-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
           </div>
-          <p className="text-white mt-6 font-medium">정밀한 사주명리 해석으로 인하여 시간이 다소 지연될 수 있습니다.</p>
+          <p className="text-white mt-6 font-medium">정밀한 사주명리 해석으로 인하여,</p>
+          <p className="text-white font-medium">시간이 다소 지연(약 1~40초)될 수 있습니다.</p>
           <p className="text-sm text-slate-400 mt-2">만세력 기반 동적 계산</p>
         </div>
       </div>

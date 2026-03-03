@@ -1280,7 +1280,7 @@ async def generate_llm_analysis(info, search_results: List[SearchResult], analys
       * detailed(고급 모드): 명리학 전문 용어 사용, 상세 분석
       * expert(사주가 모드): 원문 인용, 학술적 표현, 최대 상세도
     """
-    from config.settings import settings
+    # settings는 파일 상단에서 이미 정의됨
     
     # 검색 결과 컨텍스트 구성 (모드별 상세도 조절)
     context_parts = []
@@ -3449,7 +3449,7 @@ def get_gaewoon_by_element(element: str) -> dict:
 
 async def generate_daewoon_analysis(info, current_daewoon: dict, search_results: List[SearchResult]):
     """대운 상세 분석 생성 (비동기 httpx 버전)"""
-    from config.settings import settings
+    # settings는 파일 상단에서 이미 정의됨
     
     context_parts = []
     for r in search_results:
@@ -3527,7 +3527,7 @@ JSON 형식으로 응답하세요:
 
 async def generate_sewoon_analysis(info, sewoon: dict, target_year: int, search_results: List[SearchResult]):
     """세운 상세 분석 생성 (비동기 httpx 버전)"""
-    from config.settings import settings
+    # settings는 파일 상단에서 이미 정의됨
     
     context_parts = []
     for r in search_results:
@@ -3604,7 +3604,7 @@ JSON 형식으로 응답하세요:
 
 async def generate_wolwoon_analysis(info, wolwoon: dict, target_year: int, target_month: int, search_results: List[SearchResult]):
     """월운 상세 분석 생성 (비동기 httpx 버전)"""
-    from config.settings import settings
+    # settings는 파일 상단에서 이미 정의됨
     
     context_parts = []
     for r in search_results:
@@ -3681,7 +3681,7 @@ JSON 형식으로 응답하세요:
 
 async def generate_gaewoon_advice(info, yongshen: str, search_results: List[SearchResult]) -> str:
     """개운법 상세 조언 생성 (비동기 httpx 버전)"""
-    from config.settings import settings
+    # settings는 파일 상단에서 이미 정의됨
     
     context_parts = []
     for r in search_results:

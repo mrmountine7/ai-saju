@@ -44,7 +44,8 @@ class Settings:
     def __init__(self):
         self.deepseek = DeepSeekSettings()
         self.supabase_url = os.getenv("SUPABASE_URL", "")
-        self.supabase_key = os.getenv("SUPABASE_KEY", "")
+        # Railway에서는 SUPABASE_SERVICE_KEY 사용
+        self.supabase_key = os.getenv("SUPABASE_KEY", "") or os.getenv("SUPABASE_SERVICE_KEY", "")
 
 settings = Settings()
 

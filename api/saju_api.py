@@ -477,7 +477,7 @@ if PROMETHEUS_AVAILABLE:
 
 @app.post("/api/saju/analyze", response_model=SajuAnalysisResponse)
 @limiter.limit(RATE_LIMIT)
-async def analyze_saju(request: SajuRequest, req: Request):
+async def analyze_saju(saju_request: SajuRequest, request: Request):
     """
     D모드 사주 분석 API (최적화 버전)
     - 벡터DB 검색 (HyDE + LLM 리랭킹) - 정확도 최대 유지
@@ -495,9 +495,9 @@ async def analyze_saju(request: SajuRequest, req: Request):
         # 캐시 키 생성 (동일 입력 → 동일 결과)
         cache_key = generate_cache_key(
             "analyze",
-            year=request.year, month=request.month, day=request.day,
-            hour=request.hour, minute=request.minute, gender=request.gender,
-            is_lunar=request.is_lunar, is_leap_month=request.is_leap_month
+            year=saju_request.year, month=saju_request.month, day=saju_request.day,
+            hour=saju_request.hour, minute=saju_request.minute, gender=saju_request.gender,
+            is_lunar=saju_request.is_lunar, is_leap_month=saju_request.is_leap_month
         )
         
         # 캐시 조회
@@ -510,18 +510,18 @@ async def analyze_saju(request: SajuRequest, req: Request):
                 ACTIVE_REQUESTS.dec()
             return SajuAnalysisResponse(**cached)
         # 1. 사주 계산
-        print(f"[1/6] 사주 계산 시작: {request.name} {request.year}/{request.month}/{request.day}")
+        print(f"[1/6] 사주 계산 시작: {saju_request.name} {saju_request.year}/{saju_request.month}/{saju_request.day}")
         calc = get_calculator()
         info = calc.calculate(
-            year=request.year,
-            month=request.month,
-            day=request.day,
-            hour=request.hour,
-            minute=request.minute,
-            is_lunar=request.is_lunar,
-            is_leap_month=request.is_leap_month,
-            gender=request.gender,
-            name=request.name,
+            year=saju_request.year,
+            month=saju_request.month,
+            day=saju_request.day,
+            hour=saju_request.hour,
+            minute=saju_request.minute,
+            is_lunar=saju_request.is_lunar,
+            is_leap_month=saju_request.is_leap_month,
+            gender=saju_request.gender,
+            name=saju_request.name,
             use_solar_time=True,
         )
         print(f"  일간: {info.day_gan}({info.day_gan_ko}), 계산 완료")
@@ -581,9 +581,9 @@ async def analyze_saju(request: SajuRequest, req: Request):
                 unique_results.append(r)
         
         # 3. LLM 종합 해석 호출 (모드별 분기)
-        print(f"[3/6] LLM 종합 해석 생성 (모드: {request.analysis_level})")
+        print(f"[3/6] LLM 종합 해석 생성 (모드: {saju_request.analysis_level})")
         synthesis, easy_explanation = await generate_llm_analysis(
-            info, unique_results[:5], analysis_level=request.analysis_level
+            info, unique_results[:5], analysis_level=saju_request.analysis_level
         )
         
         # 4. 격국 판단
@@ -2323,6 +2323,52 @@ GAN_CHONG = {
     '己': '乙', '乙': '己',
 }
 
+# 십신 한글 매핑
+SIPSIN_KO_MAP = {
+    '비견': '비견', '겁재': '겁재',
+    '식신': '식신', '상관': '상관',
+    '편재': '편재', '정재': '정재',
+    '편관': '편관', '정관': '정관',
+    '편인': '편인', '정인': '정인',
+}
+
+# 천간 음양
+GAN_YINYANG = {
+    '甲': '양', '乙': '음', '丙': '양', '丁': '음', '戊': '양',
+    '己': '음', '庚': '양', '辛': '음', '壬': '양', '癸': '음'
+}
+
+
+def get_sipsin_relation(day_gan: str, target_gan: str) -> str:
+    """일간 기준 대상 천간의 십신 관계 계산"""
+    day_wx = GAN_WUXING.get(day_gan, '')
+    target_wx = GAN_WUXING.get(target_gan, '')
+    day_yy = GAN_YINYANG.get(day_gan, '')
+    target_yy = GAN_YINYANG.get(target_gan, '')
+    
+    if not day_wx or not target_wx:
+        return '?'
+    
+    same_yy = (day_yy == target_yy)
+    
+    if day_wx == target_wx:
+        return '비견' if same_yy else '겁재'
+    
+    if WUXING_SHENG.get(day_wx) == target_wx:
+        return '식신' if same_yy else '상관'
+    
+    if WUXING_KE.get(day_wx) == target_wx:
+        return '편재' if same_yy else '정재'
+    
+    if WUXING_KE.get(target_wx) == day_wx:
+        return '편관' if same_yy else '정관'
+    
+    if WUXING_SHENG.get(target_wx) == day_wx:
+        return '편인' if same_yy else '정인'
+    
+    return '?'
+
+
 # 오행 생극 관계
 WUXING_SHENG = {  # 생(生)
     '木': '火', '火': '土', '土': '金', '金': '水', '水': '木'
@@ -3702,16 +3748,36 @@ async def analyze_compatibility(request: CompatibilityRequest):
             summary = f"궁합이 좋지 않습니다. 신중한 결정이 필요합니다."
         
         # ================================================
-        # 고전 문헌 검색 (확장)
+        # 고전 문헌 검색 (확장 - 최적화된 쿼리)
         # ================================================
         search_results = []
         try:
             searcher = get_searcher()
+            
+            zhi1 = info1.pillars['day']['zhi']
+            zhi2 = info2.pillars['day']['zhi']
+            zhi1_ko = ZHI_KO_MAP.get(zhi1, zhi1)
+            zhi2_ko = ZHI_KO_MAP.get(zhi2, zhi2)
+            
+            hannan_type1 = analyze_hannan_joseup(info1)
+            hannan_type2 = analyze_hannan_joseup(info2)
+            
             queries = [
                 f"궁합 {info1.day_gan_ko}일간 {info2.day_gan_ko}일간 배우자",
                 f"부부 궁합 천간합 지지합",
-                f"한난조습 조후 궁합",
+                f"한난조습 조후 궁합 寒暖燥濕",
+                f"일지 {zhi1_ko} {zhi2_ko} 배우자궁",
+                f"日支 合沖刑 配偶 夫婦",
+                f"음양배합 부부화합 天干合",
+                f"비겁 상관 극처 극부 혼인운",
+                f"도화살 홍란성 연애 궁합",
             ]
+            
+            if ZHI_CHONG.get(zhi1) == zhi2:
+                queries.append(f"日支沖 부부 갈등 해소")
+            if ZHI_LIUHE.get(zhi1) == zhi2:
+                queries.append(f"日支合 육합 천생배필")
+            
             for query in queries:
                 results = searcher.search(query, top_k=2, min_score=0.3, mode="D")
                 for r in results:
@@ -4078,6 +4144,444 @@ def generate_compatibility_advice(total_score: int, strengths: list, weaknesses:
         return "맞지 않는 부분이 있습니다. 서로의 차이를 이해하고 배려가 필요합니다. 갈등 시 감정적 대응을 피하세요."
     else:
         return "궁합이 좋지 않습니다. 관계를 유지하려면 특별한 노력이 필요합니다. 신중한 결정을 권합니다."
+
+
+# ================================================
+# 6-1-1. 한난조습(寒暖燥濕) 분석 함수
+# ================================================
+
+def analyze_hannan_joseup(info) -> str:
+    """
+    개인 사주의 한난조습 판정
+    
+    판정 기준:
+    - 寒(한): 亥子丑월생 + 水金 과다 + 火 부족
+    - 暖(난): 巳午未월생 + 火土 과다 + 水 부족
+    - 燥(조): 火가 있고 水 부족
+    - 濕(습): 水가 많고 火가 없거나 약함
+    """
+    month_zhi = info.pillars['month']['zhi']
+    wuxing = calculate_wuxing_balance(info)
+    
+    cold_months = ['亥', '子', '丑']
+    hot_months = ['巳', '午', '未']
+    
+    water = wuxing.get('수', 0)
+    fire = wuxing.get('화', 0)
+    metal = wuxing.get('금', 0)
+    earth = wuxing.get('토', 0)
+    
+    if month_zhi in cold_months and (water + metal) > (fire + earth) and fire < 2:
+        return "한(寒)"
+    
+    if month_zhi in hot_months and (fire + earth) > (water + metal) and water < 2:
+        return "난(暖)"
+    
+    if fire >= 2 and water <= 1:
+        return "조(燥)"
+    
+    if water >= 3 and fire <= 1:
+        return "습(濕)"
+    
+    return "중화(中和)"
+
+
+def analyze_hannan_joseup_compatibility(info1, info2, name1: str, name2: str) -> str:
+    """두 사주의 한난조습 궁합 분석"""
+    type1 = analyze_hannan_joseup(info1)
+    type2 = analyze_hannan_joseup(info2)
+    
+    compatibility_matrix = {
+        ("한(寒)", "난(暖)"): "최상의 조합! 차가운 기운과 따뜻한 기운이 완벽하게 조화를 이룹니다. 서로의 부족함을 채워주는 천생연분입니다.",
+        ("난(暖)", "한(寒)"): "최상의 조합! 따뜻한 기운과 차가운 기운이 완벽하게 조화를 이룹니다. 서로의 부족함을 채워주는 천생연분입니다.",
+        ("조(燥)", "습(濕)"): "최상의 조합! 메마른 기운과 촉촉한 기운이 조화를 이룹니다. 서로에게 꼭 필요한 존재입니다.",
+        ("습(濕)", "조(燥)"): "최상의 조합! 촉촉한 기운과 메마른 기운이 조화를 이룹니다. 서로에게 꼭 필요한 존재입니다.",
+        ("한(寒)", "한(寒)"): "둘 다 차가운 기운이 강합니다. 냉랭하거나 우울한 분위기가 될 수 있으니, 따뜻한 활동을 함께하세요.",
+        ("난(暖)", "난(暖)"): "둘 다 뜨거운 기운이 강합니다. 열정적이지만 충돌이 잦을 수 있으니, 서로 양보하는 자세가 필요합니다.",
+        ("조(燥)", "조(燥)"): "둘 다 건조한 기운이 강합니다. 메마른 관계가 될 수 있으니, 감정 표현을 많이 하세요.",
+        ("습(濕)", "습(濕)"): "둘 다 습한 기운이 강합니다. 침체될 수 있으니, 활동적인 취미를 함께하세요.",
+        ("중화(中和)", "중화(中和)"): "둘 다 균형 잡힌 사주입니다. 안정적인 관계를 유지할 수 있습니다.",
+    }
+    
+    key = (type1, type2)
+    if key in compatibility_matrix:
+        description = compatibility_matrix[key]
+    elif type1 == "중화(中和)" or type2 == "중화(中和)":
+        description = "한쪽이 균형 잡힌 사주여서 안정적인 관계를 유지할 수 있습니다."
+    else:
+        description = f"{name1}님은 {type1} 타입, {name2}님은 {type2} 타입입니다. 서로 이해하고 배려하면 좋은 관계가 될 수 있습니다."
+    
+    return f"【한난조습 분석】 {name1}님: {type1}, {name2}님: {type2}\n{description}"
+
+
+# ================================================
+# 6-1-2. 지지 형(刑)/파(破)/해(害) 분석 함수
+# ================================================
+
+ZHI_XING = {
+    '子': '卯', '卯': '子',
+    '寅': '巳', '巳': '申', '申': '寅',
+    '丑': '戌', '戌': '未', '未': '丑',
+}
+
+ZHI_PO = {
+    '子': '酉', '酉': '子',
+    '丑': '辰', '辰': '丑',
+    '寅': '亥', '亥': '寅',
+    '卯': '午', '午': '卯',
+    '巳': '申', '申': '巳',
+    '未': '戌', '戌': '未',
+}
+
+ZHI_HAI = {
+    '子': '未', '未': '子',
+    '丑': '午', '午': '丑',
+    '寅': '巳', '巳': '寅',
+    '卯': '辰', '辰': '卯',
+    '申': '亥', '亥': '申',
+    '酉': '戌', '戌': '酉',
+}
+
+
+def analyze_all_jiji_interactions(info1, info2, name1: str, name2: str) -> List[str]:
+    """두 사주의 모든 지지 상호작용 분석 (합/충/형/파/해)"""
+    results = []
+    
+    pillars_pairs = [
+        ('year', 'year', '년주'),
+        ('month', 'month', '월주'),
+        ('day', 'day', '일지'),
+        ('hour', 'hour', '시주'),
+    ]
+    
+    for p1_key, p2_key, pair_name in pillars_pairs:
+        zhi1 = info1.pillars[p1_key]['zhi']
+        zhi2 = info2.pillars[p2_key]['zhi']
+        zhi1_ko = ZHI_KO_MAP.get(zhi1, zhi1)
+        zhi2_ko = ZHI_KO_MAP.get(zhi2, zhi2)
+        
+        if ZHI_LIUHE.get(zhi1) == zhi2:
+            results.append(f"✨ {pair_name} 육합({zhi1_ko}-{zhi2_ko}): 자연스러운 결합, 좋은 인연")
+        
+        if ZHI_CHONG.get(zhi1) == zhi2:
+            if pair_name == '일지':
+                results.append(f"⚠️ {pair_name} 충({zhi1_ko}-{zhi2_ko}): 배우자궁 충돌, 갈등 주의 필요")
+            else:
+                results.append(f"⚡ {pair_name} 충({zhi1_ko}-{zhi2_ko}): 갈등 요소 있음")
+        
+        if ZHI_XING.get(zhi1) == zhi2 or ZHI_XING.get(zhi2) == zhi1:
+            xing_type = ""
+            if (zhi1 in ['子', '卯'] and zhi2 in ['子', '卯']):
+                xing_type = "무례지형(無禮之刑)"
+            elif (zhi1 in ['寅', '巳', '申'] and zhi2 in ['寅', '巳', '申']):
+                xing_type = "무은지형(無恩之刑)"
+            elif (zhi1 in ['丑', '戌', '未'] and zhi2 in ['丑', '戌', '未']):
+                xing_type = "무자지형(無自之刑)"
+            results.append(f"⚠️ {pair_name} 형({zhi1_ko}-{zhi2_ko}): {xing_type} - 서로 상처를 줄 수 있음")
+        
+        if ZHI_PO.get(zhi1) == zhi2:
+            results.append(f"💔 {pair_name} 파({zhi1_ko}-{zhi2_ko}): 깨지는 인연, 약속 불이행 경향")
+        
+        if ZHI_HAI.get(zhi1) == zhi2:
+            results.append(f"😔 {pair_name} 해({zhi1_ko}-{zhi2_ko}): 서로 해치는 관계, 뒷담화 주의")
+    
+    if not results:
+        results.append("지지 간 특별한 충/형/파/해가 없습니다. 안정적인 관계입니다.")
+    
+    return results
+
+
+# ================================================
+# 6-1-3. 지장간(支藏干) 합 분석 함수
+# ================================================
+
+JIJANGGAN = {
+    '子': ['癸'],
+    '丑': ['癸', '辛', '己'],
+    '寅': ['甲', '丙', '戊'],
+    '卯': ['乙'],
+    '辰': ['乙', '癸', '戊'],
+    '巳': ['丙', '庚', '戊'],
+    '午': ['丁', '己'],
+    '未': ['丁', '乙', '己'],
+    '申': ['庚', '壬', '戊'],
+    '酉': ['辛'],
+    '戌': ['辛', '丁', '戊'],
+    '亥': ['壬', '甲'],
+}
+
+
+def analyze_jijanggan_compatibility(info1, info2, name1: str, name2: str) -> List[str]:
+    """지장간 합 분석 - 숨은 인연 찾기"""
+    results = []
+    
+    zhi1 = info1.pillars['day']['zhi']
+    zhi2 = info2.pillars['day']['zhi']
+    
+    gans1 = JIJANGGAN.get(zhi1, [])
+    gans2 = JIJANGGAN.get(zhi2, [])
+    
+    gan_he_pairs = [
+        ('甲', '己', '토(土)'),
+        ('乙', '庚', '금(金)'),
+        ('丙', '辛', '수(水)'),
+        ('丁', '壬', '목(木)'),
+        ('戊', '癸', '화(火)'),
+    ]
+    
+    found_hap = []
+    for g1 in gans1:
+        for g2 in gans2:
+            for (h1, h2, result) in gan_he_pairs:
+                if (g1 == h1 and g2 == h2) or (g1 == h2 and g2 == h1):
+                    found_hap.append(f"{GAN_TO_KO.get(g1, g1)}-{GAN_TO_KO.get(g2, g2)}합 → {result}")
+    
+    if found_hap:
+        results.append(f"🔮 지장간 숨은 합 발견!")
+        results.append(f"   {name1}님의 일지 {ZHI_KO_MAP.get(zhi1, zhi1)} 속 천간: {', '.join([GAN_TO_KO.get(g, g) for g in gans1])}")
+        results.append(f"   {name2}님의 일지 {ZHI_KO_MAP.get(zhi2, zhi2)} 속 천간: {', '.join([GAN_TO_KO.get(g, g) for g in gans2])}")
+        results.append(f"   → {', '.join(found_hap)}")
+        results.append(f"   겉으로는 잘 안 맞아 보여도 속으로 통하는 숨은 인연이 있습니다!")
+    else:
+        results.append(f"지장간에서 특별한 합이 발견되지 않았습니다.")
+    
+    return results
+
+
+# ================================================
+# 6-1-4. 십신 상호작용 분석 함수
+# ================================================
+
+def analyze_sipsin_compatibility(info1, info2, name1: str, name2: str) -> List[str]:
+    """십신 상호작용 분석"""
+    results = []
+    
+    gan1 = info1.day_gan
+    gan2 = info2.day_gan
+    
+    sipsin_a_to_b = get_sipsin_relation(gan1, gan2)
+    sipsin_b_to_a = get_sipsin_relation(gan2, gan1)
+    
+    sipsin_ko_a = SIPSIN_KO_MAP.get(sipsin_a_to_b, sipsin_a_to_b)
+    sipsin_ko_b = SIPSIN_KO_MAP.get(sipsin_b_to_a, sipsin_b_to_a)
+    
+    results.append(f"【십신 상호관계】")
+    results.append(f"  {name1}님 → {name2}님: {sipsin_ko_a}")
+    results.append(f"  {name2}님 → {name1}님: {sipsin_ko_b}")
+    
+    interpretations = {
+        ('정재', '정관'): "이상적인 부부 관계 - 남자가 여자를 보살피고, 여자가 남자를 따르는 전통적 궁합",
+        ('편재', '편관'): "열정적이지만 불안정한 관계 - 자극적이나 변동이 많을 수 있음",
+        ('식신', '정인'): "보살핌의 관계 - 서로 편안함을 주는 궁합",
+        ('상관', '편인'): "창의적이지만 갈등 가능 - 서로 다른 사고방식",
+        ('비견', '비견'): "친구 같은 관계 - 경쟁 요소 있음",
+        ('겁재', '겁재'): "강한 끌림이나 재물/주도권 다툼 가능",
+    }
+    
+    key = (sipsin_ko_a, sipsin_ko_b)
+    reverse_key = (sipsin_ko_b, sipsin_ko_a)
+    
+    if key in interpretations:
+        results.append(f"  → {interpretations[key]}")
+    elif reverse_key in interpretations:
+        results.append(f"  → {interpretations[reverse_key]}")
+    else:
+        results.append(f"  → 일반적인 십신 관계입니다.")
+    
+    return results
+
+
+# ================================================
+# 6-1-5. 주별 영향 분석 함수
+# ================================================
+
+def analyze_pillar_influences(info1, info2, name1: str, name2: str) -> List[str]:
+    """년/월/일/시주 영향 분석"""
+    results = []
+    
+    year_zhi1 = info1.pillars['year']['zhi']
+    year_zhi2 = info2.pillars['year']['zhi']
+    
+    if ZHI_CHONG.get(year_zhi1) == year_zhi2:
+        results.append(f"⚠️ 년주 충: 집안 간 갈등, 가족 문제 발생 가능")
+    elif ZHI_LIUHE.get(year_zhi1) == year_zhi2:
+        results.append(f"✨ 년주 합: 양가 화합, 가족 관계 좋음")
+    
+    month_zhi1 = info1.pillars['month']['zhi']
+    month_zhi2 = info2.pillars['month']['zhi']
+    
+    if ZHI_CHONG.get(month_zhi1) == month_zhi2:
+        results.append(f"⚠️ 월주 충: 부모/형제 관계에서 갈등 가능")
+    elif ZHI_LIUHE.get(month_zhi1) == month_zhi2:
+        results.append(f"✨ 월주 합: 부모/형제와 원만한 관계")
+    
+    hour_zhi1 = info1.pillars['hour']['zhi']
+    hour_zhi2 = info2.pillars['hour']['zhi']
+    
+    if ZHI_CHONG.get(hour_zhi1) == hour_zhi2:
+        results.append(f"⚠️ 시주 충: 자녀/노년에 갈등 가능")
+    elif ZHI_LIUHE.get(hour_zhi1) == hour_zhi2:
+        results.append(f"✨ 시주 합: 자녀/노년운 좋음")
+    
+    if not results:
+        results.append("주별 특별한 충/합이 없습니다.")
+    
+    return results
+
+
+# ================================================
+# 6-1-6. 신살(神煞) 분석 함수
+# ================================================
+
+def calculate_dohua(year_zhi: str) -> str:
+    """도화살 계산"""
+    dohua_map = {
+        '申': '酉', '子': '酉', '辰': '酉',
+        '寅': '卯', '午': '卯', '戌': '卯',
+        '巳': '午', '酉': '午', '丑': '午',
+        '亥': '子', '卯': '子', '未': '子',
+    }
+    return dohua_map.get(year_zhi, '')
+
+
+def calculate_hongran(year_zhi: str) -> str:
+    """홍란성 계산"""
+    hongran_map = {
+        '子': '卯', '丑': '寅', '寅': '丑', '卯': '子',
+        '辰': '亥', '巳': '戌', '午': '酉', '未': '申',
+        '申': '未', '酉': '午', '戌': '巳', '亥': '辰',
+    }
+    return hongran_map.get(year_zhi, '')
+
+
+def calculate_tianxi(year_zhi: str) -> str:
+    """천희성 계산"""
+    tianxi_map = {
+        '子': '酉', '丑': '申', '寅': '未', '卯': '午',
+        '辰': '巳', '巳': '辰', '午': '卯', '未': '寅',
+        '申': '丑', '酉': '子', '戌': '亥', '亥': '戌',
+    }
+    return tianxi_map.get(year_zhi, '')
+
+
+def analyze_sinsals_compatibility(info1, info2, name1: str, name2: str) -> List[str]:
+    """신살 궁합 분석"""
+    results = []
+    
+    year_zhi1 = info1.pillars['year']['zhi']
+    year_zhi2 = info2.pillars['year']['zhi']
+    
+    dohua1 = calculate_dohua(year_zhi1)
+    dohua2 = calculate_dohua(year_zhi2)
+    hongran1 = calculate_hongran(year_zhi1)
+    hongran2 = calculate_hongran(year_zhi2)
+    
+    results.append("【신살 분석】")
+    
+    if dohua1 and dohua2:
+        results.append(f"  ⚠️ 양쪽 모두 도화살 보유 - 외부 유혹 주의")
+    elif dohua1 or dohua2:
+        results.append(f"  💕 한쪽에 도화살 - 매력적인 관계")
+    
+    day_zhi1 = info1.pillars['day']['zhi']
+    day_zhi2 = info2.pillars['day']['zhi']
+    
+    if hongran1 == day_zhi2 or hongran2 == day_zhi1:
+        results.append(f"  ✨ 홍란성과 배우자궁 연결 - 결혼 인연 강함!")
+    
+    if not results[1:]:
+        results.append("  특별한 연애/결혼 신살 조합이 없습니다.")
+    
+    return results
+
+
+# ================================================
+# 6-1-7. AI 종합 해석 생성 함수
+# ================================================
+
+async def generate_compatibility_ai_synthesis(
+    info1, info2, name1: str, name2: str,
+    total_score: int, grade: str,
+    hannan_analysis: str, jiji_interactions: List[str],
+    jijanggan_analysis: List[str], sipsin_analysis: List[str],
+    pillar_influences: List[str]
+) -> str:
+    """LLM을 사용한 궁합 AI 종합 해석 생성"""
+    
+    saju1_summary = f"""【{name1}님 사주】
+- 연주: {info1.pillars['year']['gan']}{info1.pillars['year']['zhi']}
+- 월주: {info1.pillars['month']['gan']}{info1.pillars['month']['zhi']}
+- 일주: {info1.pillars['day']['gan']}{info1.pillars['day']['zhi']} (일간: {info1.day_gan_ko})
+- 시주: {info1.pillars['hour']['gan']}{info1.pillars['hour']['zhi']}"""
+    
+    saju2_summary = f"""【{name2}님 사주】
+- 연주: {info2.pillars['year']['gan']}{info2.pillars['year']['zhi']}
+- 월주: {info2.pillars['month']['gan']}{info2.pillars['month']['zhi']}
+- 일주: {info2.pillars['day']['gan']}{info2.pillars['day']['zhi']} (일간: {info2.day_gan_ko})
+- 시주: {info2.pillars['hour']['gan']}{info2.pillars['hour']['zhi']}"""
+    
+    analysis_summary = f"""【분석 결과】
+총점: {total_score}점
+등급: {grade}
+
+【한난조습 분석】
+{hannan_analysis or '분석 없음'}
+
+【지지 상호작용】
+{chr(10).join(jiji_interactions) if jiji_interactions else '없음'}
+
+【지장간 합】
+{chr(10).join(jijanggan_analysis) if jijanggan_analysis else '없음'}
+
+【십신 관계】
+{chr(10).join(sipsin_analysis) if sipsin_analysis else '없음'}
+
+【주별 영향】
+{chr(10).join(pillar_influences) if pillar_influences else '없음'}"""
+    
+    system_prompt = """당신은 중국 최고의 사주명리학 대가입니다.
+두 사람의 궁합을 종합 해석해주세요.
+
+원칙:
+1. 고전 명리학 이론에 기반 (적천수, 자평진전, 삼명통회)
+2. 한난조습을 궁합의 근본으로 중시
+3. 긍정적인 면과 주의할 점을 균형있게 제시
+4. 쉽고 친근하게 설명 (20-30대 대상)
+5. 200자 이내로 핵심만 전달"""
+    
+    user_prompt = f"""{saju1_summary}
+
+{saju2_summary}
+
+{analysis_summary}
+
+위 분석을 바탕으로 두 사람의 궁합을 200자 이내로 종합 해석해주세요.
+핵심 포인트와 조언을 담아주세요."""
+    
+    try:
+        from core.llm_client import get_deepseek_client
+        client = get_deepseek_client()
+        
+        response = await client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=500,
+            temperature=0.7,
+        )
+        
+        return response.choices[0].message.content.strip()
+    
+    except Exception as e:
+        print(f"AI 종합 해석 생성 실패: {e}")
+        if total_score >= 80:
+            return f"{name1}님과 {name2}님은 천생연분의 궁합입니다. 한난조습이 조화롭고 지지의 합이 있어 서로를 완벽하게 보완합니다. 함께라면 어떤 어려움도 극복할 수 있습니다."
+        elif total_score >= 60:
+            return f"{name1}님과 {name2}님은 좋은 인연입니다. 서로 다른 점이 있지만 그것이 오히려 보완이 됩니다. 대화와 이해로 더 깊은 관계를 만들어가세요."
+        else:
+            return f"{name1}님과 {name2}님은 노력이 필요한 관계입니다. 서로의 차이를 인정하고 배려하면 좋은 관계가 될 수 있습니다."
 
 
 # ================================================

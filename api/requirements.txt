@@ -15,3 +15,6 @@ prometheus-client>=0.19.0  # Prometheus 메트릭
 
 # 한국 음력 변환
 korean-lunar-calendar>=0.3.1
+
+# 사주 계산 라이브러리
+sajupy>=0.2.0

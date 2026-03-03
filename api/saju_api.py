@@ -48,6 +48,292 @@ class Settings:
 
 settings = Settings()
 
+# ================================================
+# sajupy 라이브러리 import (사주 계산용)
+# ================================================
+from sajupy import SajuCalculator as SajuPyCalculator
+
+# ================================================
+# 오행 매핑 상수 (WUXING_MAP)
+# ================================================
+WUXING_MAP = {
+    # 천간 → 오행
+    '甲': '목', '乙': '목',
+    '丙': '화', '丁': '화',
+    '戊': '토', '己': '토',
+    '庚': '금', '辛': '금',
+    '壬': '수', '癸': '수',
+    # 지지 → 오행
+    '子': '수', '丑': '토',
+    '寅': '목', '卯': '목',
+    '辰': '토', '巳': '화',
+    '午': '화', '未': '토',
+    '申': '금', '酉': '금',
+    '戌': '토', '亥': '수'
+}
+
+# 천간 한자-한글 매핑
+GAN_KO_MAP = {
+    '甲': '갑', '乙': '을', '丙': '병', '丁': '정', '戊': '무',
+    '己': '기', '庚': '경', '辛': '신', '壬': '임', '癸': '계'
+}
+
+# 지지 한자-한글 매핑
+ZHI_KO_MAP = {
+    '子': '자', '丑': '축', '寅': '인', '卯': '묘', '辰': '진', '巳': '사',
+    '午': '오', '未': '미', '申': '신', '酉': '유', '戌': '술', '亥': '해'
+}
+
+# 천간 오행 설명
+GAN_DESC_MAP = {
+    '甲': '양의 나무', '乙': '음의 나무',
+    '丙': '양의 불', '丁': '음의 불',
+    '戊': '양의 흙', '己': '음의 흙',
+    '庚': '양의 쇠', '辛': '음의 쇠',
+    '壬': '양의 물', '癸': '음의 물'
+}
+
+# 천간 음양
+GAN_YINYANG_MAP = {
+    '甲': '양', '乙': '음', '丙': '양', '丁': '음', '戊': '양',
+    '己': '음', '庚': '양', '辛': '음', '壬': '양', '癸': '음'
+}
+
+# 십신 계산용 상수
+GAN_WUXING = {
+    '甲': '목', '乙': '목', '丙': '화', '丁': '화', '戊': '토',
+    '己': '토', '庚': '금', '辛': '금', '壬': '수', '癸': '수'
+}
+
+WUXING_RELATION = {
+    ('목', '목'): '비겁', ('목', '화'): '식상', ('목', '토'): '재성', ('목', '금'): '관성', ('목', '수'): '인성',
+    ('화', '목'): '인성', ('화', '화'): '비겁', ('화', '토'): '식상', ('화', '금'): '재성', ('화', '수'): '관성',
+    ('토', '목'): '관성', ('토', '화'): '인성', ('토', '토'): '비겁', ('토', '금'): '식상', ('토', '수'): '재성',
+    ('금', '목'): '재성', ('금', '화'): '관성', ('금', '토'): '인성', ('금', '금'): '비겁', ('금', '수'): '식상',
+    ('수', '목'): '식상', ('수', '화'): '재성', ('수', '토'): '관성', ('수', '금'): '인성', ('수', '수'): '비겁'
+}
+
+def get_sipsin(day_gan: str, target_gan: str) -> str:
+    """일간 기준 십신 계산"""
+    day_wx = GAN_WUXING.get(day_gan, '')
+    target_wx = GAN_WUXING.get(target_gan, '')
+    if not day_wx or not target_wx:
+        return ''
+    
+    relation = WUXING_RELATION.get((day_wx, target_wx), '')
+    day_yy = GAN_YINYANG_MAP.get(day_gan, '')
+    target_yy = GAN_YINYANG_MAP.get(target_gan, '')
+    same_yy = day_yy == target_yy
+    
+    if relation == '비겁':
+        return '비견' if same_yy else '겁재'
+    elif relation == '식상':
+        return '식신' if same_yy else '상관'
+    elif relation == '재성':
+        return '편재' if same_yy else '정재'
+    elif relation == '관성':
+        return '편관' if same_yy else '정관'
+    elif relation == '인성':
+        return '편인' if same_yy else '정인'
+    return ''
+
+
+# ================================================
+# SajuInfo 클래스 (사주 계산 결과 래퍼)
+# ================================================
+class SajuInfo:
+    """sajupy 결과를 기존 인터페이스로 변환하는 래퍼 클래스"""
+    def __init__(self, result: dict, year: int, month: int, day: int, hour: int, minute: int, is_lunar: bool = False, gender: str = 'male'):
+        self._result = result
+        self._year = year
+        self._month = month
+        self._day = day
+        self._hour = hour
+        self._minute = minute
+        self._is_lunar = is_lunar
+        self._gender = gender
+        
+        # 천간/지지 추출
+        self.day_gan = result.get('day_stem', '')
+        self.day_zhi = result.get('day_branch', '')
+        
+        # 한글 변환
+        self.day_gan_ko = GAN_KO_MAP.get(self.day_gan, self.day_gan)
+        self.day_gan_desc = GAN_DESC_MAP.get(self.day_gan, '')
+        
+        # 사주 4주 정보 구성
+        self.pillars = {
+            'year': {
+                'gan': result.get('year_stem', ''),
+                'zhi': result.get('year_branch', ''),
+                'ko': [GAN_KO_MAP.get(result.get('year_stem', ''), ''), 
+                       ZHI_KO_MAP.get(result.get('year_branch', ''), '')]
+            },
+            'month': {
+                'gan': result.get('month_stem', ''),
+                'zhi': result.get('month_branch', ''),
+                'ko': [GAN_KO_MAP.get(result.get('month_stem', ''), ''), 
+                       ZHI_KO_MAP.get(result.get('month_branch', ''), '')]
+            },
+            'day': {
+                'gan': result.get('day_stem', ''),
+                'zhi': result.get('day_branch', ''),
+                'ko': [GAN_KO_MAP.get(result.get('day_stem', ''), ''), 
+                       ZHI_KO_MAP.get(result.get('day_branch', ''), '')]
+            },
+            'hour': {
+                'gan': result.get('hour_stem', ''),
+                'zhi': result.get('hour_branch', ''),
+                'ko': [GAN_KO_MAP.get(result.get('hour_stem', ''), ''), 
+                       ZHI_KO_MAP.get(result.get('hour_branch', ''), '')]
+            }
+        }
+        
+        # 십신 맵 생성
+        self.shishen_map = {}
+        for pillar in ['year', 'month', 'hour']:
+            gan = self.pillars[pillar]['gan']
+            if gan:
+                self.shishen_map[gan] = get_sipsin(self.day_gan, gan)
+
+
+# ================================================
+# SajuCalculator 래퍼 클래스
+# ================================================
+class SajuCalculator:
+    """sajupy를 래핑하여 기존 인터페이스 제공"""
+    def __init__(self):
+        self._calc = SajuPyCalculator()
+    
+    def calculate(self, year: int, month: int, day: int, hour: int, minute: int = 0, 
+                  is_lunar: bool = False, gender: str = 'male') -> SajuInfo:
+        """사주 계산 수행"""
+        try:
+            # 음력인 경우 양력으로 변환
+            if is_lunar:
+                solar = self._calc.lunar_to_solar(year, month, day)
+                if solar:
+                    year, month, day = solar['year'], solar['month'], solar['day']
+            
+            # 사주 계산
+            result = self._calc.calculate_saju(year, month, day, hour, minute)
+            return SajuInfo(result, year, month, day, hour, minute, is_lunar, gender)
+        except Exception as e:
+            print(f"[SajuCalculator] 계산 오류: {e}")
+            raise
+
+
+# ================================================
+# SajuSearch 클래스 (Supabase 벡터 검색)
+# ================================================
+class SajuSearch:
+    """Supabase pgvector를 이용한 사주 지식베이스 검색"""
+    def __init__(self):
+        self.supabase_url = settings.supabase_url
+        self.supabase_key = settings.supabase_key
+        self._embedding_cache = {}
+    
+    async def _get_embedding_async(self, text: str) -> list:
+        """DeepSeek API로 텍스트 임베딩 생성 (비동기)"""
+        if text in self._embedding_cache:
+            return self._embedding_cache[text]
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{settings.deepseek.base_url}/embeddings",
+                    headers={
+                        "Authorization": f"Bearer {settings.deepseek.api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "text-embedding-3-small",
+                        "input": text
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    embedding = data.get('data', [{}])[0].get('embedding', [])
+                    self._embedding_cache[text] = embedding
+                    return embedding
+        except Exception as e:
+            print(f"[SajuSearch] 임베딩 생성 오류: {e}")
+        return []
+    
+    def _get_embedding_sync(self, text: str) -> list:
+        """OpenAI 호환 API로 텍스트 임베딩 생성 (동기)"""
+        import requests
+        if text in self._embedding_cache:
+            return self._embedding_cache[text]
+        
+        try:
+            response = requests.post(
+                f"{settings.deepseek.base_url}/embeddings",
+                headers={
+                    "Authorization": f"Bearer {settings.deepseek.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "text-embedding-3-small",
+                    "input": text
+                },
+                timeout=30
+            )
+            if response.status_code == 200:
+                data = response.json()
+                embedding = data.get('data', [{}])[0].get('embedding', [])
+                self._embedding_cache[text] = embedding
+                return embedding
+        except Exception as e:
+            print(f"[SajuSearch] 임베딩 생성 오류: {e}")
+        return []
+    
+    def search(self, query: str, top_k: int = 5, min_score: float = 0.3, mode: str = "D") -> list:
+        """벡터 유사도 검색 수행"""
+        import requests
+        
+        if not self.supabase_url or not self.supabase_key:
+            print("[SajuSearch] Supabase 설정 누락")
+            return []
+        
+        try:
+            # 쿼리 임베딩 생성
+            embedding = self._get_embedding_sync(query)
+            if not embedding:
+                print(f"[SajuSearch] 임베딩 생성 실패: {query[:50]}")
+                return []
+            
+            # Supabase RPC 호출 (match_documents 함수)
+            response = requests.post(
+                f"{self.supabase_url}/rest/v1/rpc/match_documents",
+                headers={
+                    "apikey": self.supabase_key,
+                    "Authorization": f"Bearer {self.supabase_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "query_embedding": embedding,
+                    "match_threshold": min_score,
+                    "match_count": top_k
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                results = response.json()
+                return [{
+                    'content': r.get('content', ''),
+                    'metadata': r.get('metadata', {}),
+                    'score': r.get('similarity', 0)
+                } for r in results]
+            else:
+                print(f"[SajuSearch] Supabase 검색 오류: {response.status_code} - {response.text[:200]}")
+        except Exception as e:
+            print(f"[SajuSearch] 검색 오류: {e}")
+        
+        return []
+
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -354,7 +640,6 @@ _searcher = None
 def get_calculator():
     global _calculator
     if _calculator is None:
-        from analyzers.saju_calculator import SajuCalculator
         _calculator = SajuCalculator()
     return _calculator
 
@@ -362,7 +647,6 @@ def get_calculator():
 def get_searcher():
     global _searcher
     if _searcher is None:
-        from search import SajuSearch
         _searcher = SajuSearch()
     return _searcher
 
@@ -2253,8 +2537,6 @@ def find_all_shinsal(info) -> dict:
 
 def calculate_wuxing_balance(info) -> dict:
     """오행 분포 계산"""
-    from analyzers.saju_calculator import WUXING_MAP, HIDDEN_STEMS
-    
     count = {'목': 0, '화': 0, '토': 0, '금': 0, '수': 0}
     wuxing_ko = {'木': '목', '火': '화', '土': '토', '金': '금', '水': '수'}
     

@@ -237,7 +237,10 @@ class SajuCalculator:
             if is_lunar:
                 solar = self._calc.lunar_to_solar(year, month, day, is_leap_month)
                 if solar:
-                    year, month, day = solar['year'], solar['month'], solar['day']
+                    # sajupy는 solar_year, solar_month, solar_day 키 사용
+                    year = solar.get('solar_year') or solar.get('year', year)
+                    month = solar.get('solar_month') or solar.get('month', month)
+                    day = solar.get('solar_day') or solar.get('day', day)
             
             # 사주 계산 (use_solar_time 옵션 적용)
             result = self._calc.calculate_saju(year, month, day, hour, minute, use_solar_time=use_solar_time)

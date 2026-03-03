@@ -90,7 +90,7 @@ export function ExpertClassicsSearch() {
     setSearchResults([]);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/classics/search`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://ai-saju-production.up.railway.app'}/api/classics/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

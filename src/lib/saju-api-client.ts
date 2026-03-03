@@ -5,7 +5,9 @@
  * - 일진/오늘운세, 궁합, 확장분석 API 추가
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+// API 서버 URL (환경변수 또는 Railway 프로덕션 도메인)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ai-saju-production.up.railway.app';
+console.log('[API] Base URL:', API_BASE_URL);
 
 // API 상태 체크 캐시 (5분)
 let healthCheckCache: { healthy: boolean; timestamp: number } | null = null;

@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,10 +17,12 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, isExpertUser, loading } = useAuth();
   const location = useLocation();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
       </div>
     );

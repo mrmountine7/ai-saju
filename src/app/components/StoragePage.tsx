@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { getDeviceId } from '@/lib/device-id';
 import { useAnalysisMode, ANALYSIS_MODES } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface Profile {
   id: string;
@@ -309,21 +310,60 @@ export function StoragePage() {
     }
   };
 
+  // 현재 모드의 테마
+  const theme = MODE_THEMES[mode];
+
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-        <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="min-h-screen relative overflow-hidden" style={{ background: theme.bgGradient }}>
+        {/* 천간/지지 배경 장식 */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.06]">
+          {/* 천간 (天干) - 좌측 */}
+          <div className="absolute text-2xl text-gray-400" style={{ top: '3%', left: '5%', transform: 'rotate(-15deg)' }}>甲</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '12%', left: '18%', transform: 'rotate(8deg)' }}>乙</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '22%', left: '3%', transform: 'rotate(-10deg)' }}>丙</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '35%', left: '15%', transform: 'rotate(12deg)' }}>丁</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '48%', left: '6%', transform: 'rotate(-8deg)' }}>戊</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '58%', left: '20%', transform: 'rotate(15deg)' }}>己</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '70%', left: '4%', transform: 'rotate(-12deg)' }}>庚</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '82%', left: '16%', transform: 'rotate(6deg)' }}>辛</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '90%', left: '8%', transform: 'rotate(-18deg)' }}>壬</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '95%', left: '22%', transform: 'rotate(10deg)' }}>癸</div>
+
+          {/* 지지 (地支) - 우측 */}
+          <div className="absolute text-2xl text-gray-400" style={{ top: '5%', right: '6%', transform: 'rotate(12deg)' }}>子</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '14%', right: '18%', transform: 'rotate(-10deg)' }}>丑</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '25%', right: '4%', transform: 'rotate(18deg)' }}>寅</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '38%', right: '15%', transform: 'rotate(-15deg)' }}>卯</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '50%', right: '7%', transform: 'rotate(8deg)' }}>辰</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '60%', right: '20%', transform: 'rotate(-12deg)' }}>巳</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '72%', right: '5%', transform: 'rotate(15deg)' }}>午</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '83%', right: '17%', transform: 'rotate(-8deg)' }}>未</div>
+          <div className="absolute text-2xl text-gray-400" style={{ top: '92%', right: '8%', transform: 'rotate(10deg)' }}>申</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '97%', right: '22%', transform: 'rotate(-6deg)' }}>酉</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '8%', right: '35%', transform: 'rotate(5deg)' }}>戌</div>
+          <div className="absolute text-xl text-gray-400" style={{ top: '8%', left: '35%', transform: 'rotate(-5deg)' }}>亥</div>
+        </div>
+        
+        <div className="max-w-lg mx-auto px-4 py-6 relative z-10">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => navigate('/')}
-                className="p-1.5 -ml-1.5 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1.5 -ml-1.5 rounded-full transition-colors"
+                style={{ backgroundColor: `${theme.primary}10` }}
               >
-                <ArrowLeft className="w-5 h-5 text-slate-300" />
+                <ArrowLeft className="w-5 h-5" style={{ color: theme.textSecondary }} />
               </button>
-              <Database className="w-5 h-5 text-amber-400" />
-              <span className="text-lg font-bold text-white">사주 보관소</span>
+              <Database className="w-5 h-5" style={{ color: theme.primary, filter: `drop-shadow(0 0 8px ${theme.primaryGlow})` }} />
+              <span 
+                className="text-lg font-bold" 
+                style={{ 
+                  color: theme.textPrimary,
+                  textShadow: `0 0 20px ${theme.primaryGlow}, 0 0 10px ${theme.primaryGlow}`
+                }}
+              >사주 보관소</span>
               {isAdmin && (
                 <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full">
                   관리자
@@ -334,9 +374,10 @@ export function StoragePage() {
               <NotificationBell />
               <button 
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-2 rounded-full transition-colors"
+                style={{ backgroundColor: `${theme.primary}10` }}
               >
-                <Menu className="w-6 h-6 text-slate-300" />
+                <Menu className="w-6 h-6" style={{ color: theme.textSecondary }} />
               </button>
             </div>
           </div>
@@ -345,47 +386,41 @@ export function StoragePage() {
           <div className="mb-6">
             <button
               onClick={() => setShowModeSelector(!showModeSelector)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
-                mode === 'beginner' ? 'bg-white/90 border-amber-400 hover:bg-white' :
-                mode === 'advanced' ? 'bg-slate-500/50 border-slate-400 hover:bg-slate-500/70' :
-                'bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20'
-              }`}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors"
+              style={{ 
+                backgroundColor: theme.cardBg, 
+                border: `${theme.cardBorderWidth} solid ${theme.cardBorder}`,
+              }}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  mode === 'beginner' ? 'bg-amber-100' :
-                  mode === 'advanced' ? 'bg-slate-400/50' :
-                  'bg-purple-500/20'
-                }`}>
-                  {mode === 'beginner' && <Star className="w-4 h-4 text-amber-500" />}
-                  {mode === 'advanced' && <TrendingUp className="w-4 h-4 text-white" />}
-                  {mode === 'expert' && <Crown className="w-4 h-4 text-purple-400" />}
+                <div 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: `${theme.primary}30` }}
+                >
+                  {mode === 'beginner' && <Star className="w-4 h-4" style={{ color: theme.primary }} />}
+                  {mode === 'advanced' && <TrendingUp className="w-4 h-4" style={{ color: theme.primary }} />}
+                  {mode === 'expert' && <Crown className="w-4 h-4" style={{ color: theme.primary }} />}
                 </div>
                 <div className="text-left">
-                  <span className={`text-sm font-medium ${
-                    mode === 'beginner' ? 'text-amber-600' :
-                    mode === 'advanced' ? 'text-white' :
-                    'text-purple-400'
-                  }`}>{modeInfo.name}</span>
-                  <p className={`text-xs ${
-                    mode === 'beginner' ? 'text-slate-600' :
-                    mode === 'advanced' ? 'text-slate-200' :
-                    'text-slate-500'
-                  }`}>{modeInfo.description}</p>
+                  <span className="text-sm font-medium" style={{ color: theme.cardText }}>{modeInfo.name}</span>
+                  <p className="text-xs" style={{ color: theme.cardTextMuted }}>{modeInfo.description}</p>
                 </div>
               </div>
-              <ChevronRight className={`w-5 h-5 transition-transform ${
-                mode === 'beginner' ? 'text-slate-500' :
-                mode === 'advanced' ? 'text-slate-300' :
-                'text-slate-400'
-              } ${showModeSelector ? 'rotate-90' : ''}`} />
+              <ChevronRight 
+                className={`w-5 h-5 transition-transform ${showModeSelector ? 'rotate-90' : ''}`} 
+                style={{ color: theme.cardTextMuted }}
+              />
             </button>
 
             {/* Mode Selector Dropdown */}
             {showModeSelector && (
-              <div className="mt-2 bg-slate-800/80 backdrop-blur rounded-xl border border-slate-700 overflow-hidden">
+              <div 
+                className="mt-2 backdrop-blur rounded-xl overflow-hidden"
+                style={{ backgroundColor: theme.cardBg, border: `${theme.cardBorderWidth} solid ${theme.cardBorder}` }}
+              >
                 {(Object.keys(ANALYSIS_MODES) as Array<keyof typeof ANALYSIS_MODES>).map((modeKey) => {
                   const modeData = ANALYSIS_MODES[modeKey];
+                  const modeTheme = MODE_THEMES[modeKey];
                   const isSelected = mode === modeKey;
                   return (
                     <button
@@ -394,37 +429,28 @@ export function StoragePage() {
                         setMode(modeKey);
                         setShowModeSelector(false);
                       }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
-                        isSelected 
-                          ? modeKey === 'beginner' ? 'bg-white/20' :
-                            modeKey === 'advanced' ? 'bg-slate-500/30' :
-                            'bg-purple-500/20'
-                          : 'hover:bg-slate-700/50'
-                      }`}
+                      className="w-full flex items-center gap-3 px-4 py-3 transition-colors"
+                      style={{ 
+                        backgroundColor: isSelected ? `${modeTheme.primary}20` : 'transparent',
+                      }}
                     >
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        modeKey === 'beginner' ? 'bg-amber-100' :
-                        modeKey === 'advanced' ? 'bg-slate-500/50' :
-                        'bg-purple-500/20'
-                      }`}>
-                        {modeKey === 'beginner' && <Star className="w-4 h-4 text-amber-500" />}
-                        {modeKey === 'advanced' && <TrendingUp className="w-4 h-4 text-slate-200" />}
-                        {modeKey === 'expert' && <Crown className="w-4 h-4 text-purple-400" />}
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: `${modeTheme.primary}30` }}
+                      >
+                        {modeKey === 'beginner' && <Star className="w-4 h-4" style={{ color: modeTheme.primary }} />}
+                        {modeKey === 'advanced' && <TrendingUp className="w-4 h-4" style={{ color: modeTheme.primary }} />}
+                        {modeKey === 'expert' && <Crown className="w-4 h-4" style={{ color: modeTheme.primary }} />}
                       </div>
                       <div className="flex-1 text-left">
-                        <span className={`text-sm font-medium ${
-                          modeKey === 'beginner' ? 'text-amber-400' :
-                          modeKey === 'advanced' ? 'text-slate-300' :
-                          'text-purple-400'
-                        }`}>{modeData.name}</span>
-                        <p className="text-xs text-slate-500">{modeData.description}</p>
+                        <span className="text-sm font-medium" style={{ color: modeTheme.cardText }}>{modeData.name}</span>
+                        <p className="text-xs" style={{ color: modeTheme.cardTextMuted }}>{modeData.description}</p>
                       </div>
                       {isSelected && (
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                          modeKey === 'beginner' ? 'bg-amber-500' :
-                          modeKey === 'advanced' ? 'bg-slate-400' :
-                          'bg-purple-500'
-                        }`}>
+                        <div 
+                          className="w-5 h-5 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: modeTheme.primary }}
+                        >
                           <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
@@ -440,38 +466,54 @@ export function StoragePage() {
           {/* My Profile Card */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-base font-semibold text-white">나의 프로필</span>
-              <Search className="w-5 h-5 text-slate-400 cursor-pointer hover:text-white transition-colors" />
+              <span 
+                className="text-base font-semibold" 
+                style={{ color: theme.textSecondary, textShadow: `0 0 15px ${theme.primaryGlow}` }}
+              >나의 프로필</span>
+              <Search className="w-5 h-5 cursor-pointer transition-colors" style={{ color: theme.textMuted }} />
             </div>
             <div 
-              className="bg-slate-800/50 backdrop-blur rounded-xl p-4 cursor-pointer hover:bg-slate-700/50 transition-colors border border-slate-700"
+              className="backdrop-blur rounded-xl p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02]"
+              style={{ 
+                backgroundColor: theme.cardBg, 
+                border: `${theme.cardBorderWidth} solid ${theme.cardBorder}`,
+                boxShadow: `0 4px 20px ${theme.primaryGlow}40`
+              }}
               onClick={() => myProfile ? navigate(`/add?id=${myProfile.id}`) : navigate('/add')}
             >
               {myProfile ? (
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25">
+                  <div 
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg"
+                    style={{ 
+                      background: `linear-gradient(135deg, ${theme.primary}, ${theme.buttonHover})`,
+                      boxShadow: `0 10px 25px ${theme.primaryGlow}`
+                    }}
+                  >
                     {getZodiacAnimal(myProfile.birth_year).icon}
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-white">{myProfile.name}</div>
-                    <div className="text-sm text-slate-400">{formatBirth(myProfile)} {myProfile.city}</div>
+                    <div className="font-medium" style={{ color: theme.cardText }}>{myProfile.name}</div>
+                    <div className="text-sm" style={{ color: theme.cardTextMuted }}>{formatBirth(myProfile)} {myProfile.city}</div>
                   </div>
-                  <div className={`px-2 py-1 rounded-lg text-xs ${
-                    mode === 'beginner' ? 'bg-amber-500/20 text-amber-400' :
-                    mode === 'advanced' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-purple-500/20 text-purple-400'
-                  }`}>
+                  <div 
+                    className="px-2 py-1 rounded-lg text-xs"
+                    style={{ backgroundColor: `${theme.primary}20`, color: theme.primary }}
+                  >
                     {modeInfo.name}
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-slate-700 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                    <Plus className="w-6 h-6 text-slate-500" />
+                  <div 
+                    className="w-14 h-14 rounded-full border-2 border-dashed flex items-center justify-center"
+                    style={{ borderColor: theme.cardBorder }}
+                  >
+                    <Plus className="w-6 h-6" style={{ color: theme.cardTextMuted }} />
                   </div>
                   <div>
-                    <div className="font-medium text-slate-400">프로필을 설정하세요</div>
-                    <div className="text-sm text-slate-500">클릭하여 프로필 추가</div>
+                    <div className="font-medium" style={{ color: theme.cardText }}>프로필을 설정하세요</div>
+                    <div className="text-sm" style={{ color: theme.cardTextMuted }}>클릭하여 프로필 추가</div>
                   </div>
                 </div>
               )}
@@ -480,11 +522,17 @@ export function StoragePage() {
 
           {/* Favorites */}
           <div className="mb-6">
-            <h2 className="text-base font-semibold text-white mb-3">즐겨찾기</h2>
+            <h2 
+              className="text-base font-semibold mb-3" 
+              style={{ color: theme.textSecondary, textShadow: `0 0 15px ${theme.primaryGlow}` }}
+            >즐겨찾기</h2>
             <div 
-              className={`bg-slate-800/50 backdrop-blur rounded-xl px-4 py-4 transition-all duration-200 border ${
-                dragOverFavorite ? 'border-amber-400 bg-amber-500/10' : 'border-slate-700'
-              } ${isDragMode ? 'border-dashed border-amber-500/50' : ''}`}
+              className="backdrop-blur rounded-xl px-4 py-4 transition-all duration-200"
+              style={{ 
+                backgroundColor: dragOverFavorite ? `${theme.primary}15` : theme.cardBg, 
+                border: `${theme.cardBorderWidth} ${isDragMode ? 'dashed' : 'solid'} ${dragOverFavorite ? theme.primary : theme.cardBorder}`,
+                boxShadow: `0 4px 20px ${theme.primaryGlow}30`
+              }}
               onDragOver={handleFavoriteDragOver}
               onDragLeave={handleFavoriteDragLeave}
               onDrop={handleFavoriteDrop}
@@ -501,18 +549,27 @@ export function StoragePage() {
                         setShowPopup(true);
                       }}
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xl shadow-lg shadow-amber-500/20">
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-xl shadow-lg"
+                        style={{ 
+                          background: `linear-gradient(135deg, ${theme.primary}, ${theme.buttonHover})`,
+                          boxShadow: `0 8px 20px ${theme.primaryGlow}`
+                        }}
+                      >
                         {getZodiacAnimal(profile.birth_year).icon}
                       </div>
-                      <span className="text-xs text-slate-300 text-center w-14 truncate">{profile.name}</span>
+                      <span className="text-xs text-center w-14 truncate" style={{ color: theme.textSecondary }}>{profile.name}</span>
                     </div>
                   ) : (
                     <div 
                       key={`empty-${index}`} 
                       className="flex flex-col items-center gap-1.5"
                     >
-                      <div className="w-12 h-12 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center">
-                        <Plus className={`w-5 h-5 ${isDragMode ? 'text-amber-400' : 'text-slate-600'}`} />
+                      <div 
+                        className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center"
+                        style={{ borderColor: theme.cardBorder }}
+                      >
+                        <Plus className="w-5 h-5" style={{ color: isDragMode ? theme.primary : theme.textMuted }} />
                       </div>
                       <span className="text-xs text-transparent h-4">-</span>
                     </div>
@@ -520,7 +577,7 @@ export function StoragePage() {
                 })}
               </div>
               {isDragMode && (
-                <div className="text-sm text-amber-400 flex items-center justify-center gap-2 mt-3">
+                <div className="text-sm flex items-center justify-center gap-2 mt-3" style={{ color: theme.primary }}>
                   <Bookmark className="w-4 h-4" />
                   드롭하여 추가
                 </div>
@@ -531,24 +588,36 @@ export function StoragePage() {
           {/* Saved List */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-white">저장목록</h2>
+              <h2 
+                className="text-base font-semibold" 
+                style={{ color: theme.textSecondary, textShadow: `0 0 15px ${theme.primaryGlow}` }}
+              >저장목록</h2>
               <button 
                 onClick={() => navigate('/add')}
-                className="text-sm text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+                className="text-sm transition-colors flex items-center gap-1"
+                style={{ color: theme.primary, textShadow: `0 0 10px ${theme.primaryGlow}` }}
               >
                 추가하기
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="bg-slate-800/50 backdrop-blur rounded-xl p-4 space-y-3 border border-slate-700">
+            <div 
+              className="backdrop-blur rounded-xl p-4 space-y-3"
+              style={{ 
+                backgroundColor: theme.cardBg, 
+                border: `${theme.cardBorderWidth} solid ${theme.cardBorder}`,
+                boxShadow: `0 4px 20px ${theme.primaryGlow}30`
+              }}
+            >
               {loading ? (
-                <div className="text-center text-slate-400 py-8">불러오는 중...</div>
+                <div className="text-center py-8" style={{ color: theme.cardTextMuted }}>불러오는 중...</div>
               ) : profiles.length === 0 ? (
-                <div className="text-center text-slate-400 py-8">
+                <div className="text-center py-8" style={{ color: theme.cardText }}>
                   저장된 명식이 없습니다.<br />
                   <button 
                     onClick={() => navigate('/add')}
-                    className="text-amber-400 hover:text-amber-300 mt-2"
+                    className="mt-2"
+                    style={{ color: theme.primary }}
                   >
                     새로 추가하기
                   </button>
@@ -556,11 +625,15 @@ export function StoragePage() {
               ) : (
                 <>
                   {isDragMode && (
-                    <div className="flex items-center justify-between bg-amber-500/10 p-3 rounded-lg mb-2 border border-amber-500/30">
-                      <span className="text-sm text-amber-400">드래그하여 순서 변경</span>
+                    <div 
+                      className="flex items-center justify-between p-3 rounded-lg mb-2 border"
+                      style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}50` }}
+                    >
+                      <span className="text-sm" style={{ color: theme.primary }}>드래그하여 순서 변경</span>
                       <button
                         onClick={handleExitDragMode}
-                        className="px-3 py-1 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600 transition-colors"
+                        className="px-3 py-1 text-white rounded-lg text-sm transition-colors"
+                        style={{ backgroundColor: theme.primary }}
                       >
                         완료
                       </button>
@@ -580,25 +653,28 @@ export function StoragePage() {
                       onMouseLeave={handlePressEnd}
                       onTouchStart={() => handlePressStart(profile, index)}
                       onTouchEnd={handlePressEnd}
-                      className={`flex items-center gap-4 p-3 rounded-xl select-none transition-all duration-200 ${
-                        isDragMode ? 'cursor-grab hover:bg-amber-500/10' : 'cursor-pointer hover:bg-slate-700/50'
-                      } ${
-                        draggedIndex === index ? 'opacity-50 scale-95' : ''
-                      } ${
-                        dragOverIndex === index ? 'border-2 border-amber-400 bg-amber-500/10' : ''
-                      } ${
-                        dragModeIndex === index && isDragMode ? 'ring-2 ring-amber-400 bg-amber-500/10' : ''
-                      }`}
+                      className="flex items-center gap-4 p-3 rounded-xl select-none transition-all duration-200"
+                      style={{
+                        cursor: isDragMode ? 'grab' : 'pointer',
+                        opacity: draggedIndex === index ? 0.5 : 1,
+                        transform: draggedIndex === index ? 'scale(0.95)' : 'none',
+                        border: dragOverIndex === index ? `2px solid ${theme.primary}` : 'none',
+                        backgroundColor: (dragOverIndex === index || (dragModeIndex === index && isDragMode)) ? `${theme.primary}15` : 'transparent',
+                        boxShadow: dragModeIndex === index && isDragMode ? `0 0 0 2px ${theme.primary}` : 'none'
+                      }}
                     >
-                      <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-600 flex items-center justify-center flex-shrink-0 text-xl">
+                      <div 
+                        className="w-12 h-12 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-xl"
+                        style={{ borderColor: theme.cardBorder, backgroundColor: `${theme.primary}10` }}
+                      >
                         {getZodiacAnimal(profile.birth_year).icon}
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-white">{profile.name}</div>
-                        <div className="text-sm text-slate-400">{formatBirth(profile)} {profile.city}</div>
+                        <div className="font-medium" style={{ color: theme.cardText }}>{profile.name}</div>
+                        <div className="text-sm" style={{ color: theme.cardTextMuted }}>{formatBirth(profile)} {profile.city}</div>
                       </div>
                       {profile.is_favorite && (
-                        <Bookmark className="w-4 h-4 text-amber-400 fill-amber-400" />
+                        <Bookmark className="w-4 h-4" style={{ color: theme.primary, fill: theme.primary }} />
                       )}
                     </div>
                   ))}
@@ -611,7 +687,7 @@ export function StoragePage() {
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Bottom Popup Menu - Dark Theme */}
+      {/* Bottom Popup Menu - Theme Styled */}
       {showPopup && selectedProfile && (
         <>
           <div 
@@ -619,14 +695,17 @@ export function StoragePage() {
             onClick={() => setShowPopup(false)}
           />
           
-          <div className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-3xl z-50 animate-slide-up border-t border-slate-700">
+          <div 
+            className="fixed bottom-0 left-0 right-0 rounded-t-3xl z-50 animate-slide-up border-t"
+            style={{ background: theme.bgGradient, borderColor: theme.cardBorder }}
+          >
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1 bg-slate-600 rounded-full" />
+              <div className="w-12 h-1 rounded-full" style={{ backgroundColor: theme.cardBorder }} />
             </div>
             
-            <div className="text-center py-5 border-b border-slate-700">
-              <h3 className="text-xl font-semibold text-white">{selectedProfile.name}</h3>
-              <p className="text-sm text-slate-400 mt-1">{formatBirth(selectedProfile)}</p>
+            <div className="text-center py-5 border-b" style={{ borderColor: theme.cardBorder }}>
+              <h3 className="text-xl font-semibold" style={{ color: theme.textPrimary }}>{selectedProfile.name}</h3>
+              <p className="text-sm mt-1" style={{ color: theme.textMuted }}>{formatBirth(selectedProfile)}</p>
             </div>
             
             <div className="py-2">
@@ -635,9 +714,10 @@ export function StoragePage() {
                   navigate(`/result?id=${selectedProfile.id}`);
                   setShowPopup(false);
                 }}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Sparkles className="w-5 h-5 text-amber-400" />
+                <Sparkles className="w-5 h-5" style={{ color: theme.primary }} />
                 天乙貴人 풀이
               </button>
               
@@ -646,9 +726,10 @@ export function StoragePage() {
                   navigate('/daily', { state: { profile: selectedProfile } });
                   setShowPopup(false);
                 }}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Calendar className="w-5 h-5 text-cyan-400" />
+                <Calendar className="w-5 h-5" style={{ color: theme.primary }} />
                 일진 캘린더
               </button>
               
@@ -657,39 +738,49 @@ export function StoragePage() {
                   navigate('/compatibility');
                   setShowPopup(false);
                 }}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Heart className="w-5 h-5 text-pink-400" />
+                <Heart className="w-5 h-5" style={{ color: theme.primary }} />
                 궁합 분석
               </button>
               
               <button 
                 onClick={handleViewDetail}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Search className="w-5 h-5 text-slate-400" />
+                <Search className="w-5 h-5" style={{ color: theme.textMuted }} />
                 명식 상세보기
               </button>
               
               <button 
                 onClick={handleSetPrimary}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Crown className="w-5 h-5 text-amber-400" />
+                <Crown className="w-5 h-5" style={{ color: theme.primary }} />
                 프로필 등록
               </button>
               
               <button 
                 onClick={handleToggleFavorite}
-                className="w-full py-4 text-center text-base text-white hover:bg-slate-800 border-b border-slate-700 flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 text-center text-base border-b flex items-center justify-center gap-2 transition-colors"
+                style={{ color: theme.textSecondary, borderColor: theme.cardBorder }}
               >
-                <Bookmark className={`w-5 h-5 ${selectedProfile.is_favorite ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
+                <Bookmark 
+                  className="w-5 h-5" 
+                  style={{ 
+                    color: selectedProfile.is_favorite ? theme.primary : theme.textMuted,
+                    fill: selectedProfile.is_favorite ? theme.primary : 'none'
+                  }} 
+                />
                 {selectedProfile.is_favorite ? '즐겨찾기 해제' : '즐겨찾기 등록'}
               </button>
               
               <button 
                 onClick={handleDelete}
-                className="w-full py-4 text-center text-base text-red-400 hover:bg-slate-800 transition-colors"
+                className="w-full py-4 text-center text-base text-red-400 transition-colors"
               >
                 명식 삭제
               </button>

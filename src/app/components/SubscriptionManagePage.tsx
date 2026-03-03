@@ -15,11 +15,15 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { PRODUCTS } from '@/lib/payment';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 export function SubscriptionManagePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { subscription, isPremium, refreshSubscription } = useSubscription();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export function SubscriptionManagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

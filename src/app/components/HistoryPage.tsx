@@ -4,6 +4,8 @@ import { ArrowLeft, Calendar, Clock, FileText, Download, Trash2, User, Sparkles 
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { getDeviceId } from '@/lib/device-id';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface SajuHistoryItem {
   id: string;
@@ -30,6 +32,8 @@ interface SajuHistoryItem {
 export function HistoryPage() {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [history, setHistory] = useState<SajuHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,7 +157,7 @@ export function HistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-4"></div>
           <p className="text-slate-400">분석 이력을 불러오는 중...</p>
@@ -163,7 +167,7 @@ export function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

@@ -195,7 +195,7 @@ export function CompatibilityPage() {
     }, 2000);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/saju/compatibility/detailed`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://ai-saju-production.up.railway.app'}/api/saju/compatibility/detailed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

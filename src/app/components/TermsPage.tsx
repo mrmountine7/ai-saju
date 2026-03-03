@@ -1,11 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileText } from 'lucide-react';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 export function TermsPage() {
   const navigate = useNavigate();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

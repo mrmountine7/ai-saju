@@ -14,10 +14,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { EXPERT_FEATURES, EXPERT_MONTHLY_PRICE, EXPERT_YEARLY_PRICE, formatPrice } from '@/lib/payment-config';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 export function ExpertSubscriptionPage() {
   const navigate = useNavigate();
   const { isAuthenticated, isExpertUser } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [selectedPlan, setSelectedPlan] = useState<'yearly' | 'monthly'>('yearly');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -39,7 +43,7 @@ export function ExpertSubscriptionPage() {
 
   if (isExpertUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen" style={{ background: theme.bgGradient }}>
         <div className="max-w-lg mx-auto px-4 py-6">
           <div className="flex items-center gap-3 mb-8">
             <button
@@ -74,7 +78,7 @@ export function ExpertSubscriptionPage() {
   const yearlyDiscount = Math.round((1 - (EXPERT_YEARLY_PRICE / (EXPERT_MONTHLY_PRICE * 12))) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

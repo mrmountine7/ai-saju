@@ -11,7 +11,7 @@ import { loadTossPayments, TossPaymentsInstance } from '@tosspayments/tosspaymen
 const CLIENT_KEY = import.meta.env.VITE_TOSS_CLIENT_KEY || 'test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq';
 
 // API Base URL
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://ai-saju-production.up.railway.app';
 
 // 테스트 모드 (결제 우회)
 export const IS_TEST_MODE = import.meta.env.VITE_TEST_MODE === 'true' || import.meta.env.DEV;

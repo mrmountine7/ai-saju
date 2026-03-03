@@ -31,10 +31,63 @@ export function LandingPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [hoveredMode, setHoveredMode] = useState<AnalysisMode | null>(null);
   const [showSplash, setShowSplash] = useState<AnalysisMode | null>(null);
+  const [analysisCount, setAnalysisCount] = useState(1295);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowStats(true), 500);
     return () => clearTimeout(timer);
+  }, []);
+
+  // AI 사주 분석 카운트 - 시간 기반 누계 증가
+  useEffect(() => {
+    const STORAGE_KEY = 'ai_saju_analysis_data';
+    const BASE_COUNT = 1295; // 시작값
+    const HOURLY_MIN = 20; // 시간당 최소 증가
+    const HOURLY_MAX = 30; // 시간당 최대 증가
+
+    // 저장된 데이터 불러오기
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    let lastCount = BASE_COUNT;
+    let lastTimestamp = Date.now();
+
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        lastCount = parsed.count || BASE_COUNT;
+        lastTimestamp = parsed.timestamp || Date.now();
+      } catch {
+        lastCount = BASE_COUNT;
+        lastTimestamp = Date.now();
+      }
+    }
+
+    // 서버 다운 시간 동안의 누적 계산
+    const now = Date.now();
+    const hoursPassed = Math.floor((now - lastTimestamp) / (1000 * 60 * 60));
+    
+    if (hoursPassed > 0) {
+      // 지나간 시간만큼 랜덤 증가 누적
+      for (let i = 0; i < hoursPassed; i++) {
+        const randomIncrement = Math.floor(Math.random() * (HOURLY_MAX - HOURLY_MIN + 1)) + HOURLY_MIN;
+        lastCount += randomIncrement;
+      }
+      // 업데이트된 데이터 저장
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ count: lastCount, timestamp: now }));
+    }
+
+    setAnalysisCount(lastCount);
+
+    // 1시간마다 업데이트
+    const interval = setInterval(() => {
+      setAnalysisCount(prev => {
+        const randomIncrement = Math.floor(Math.random() * (HOURLY_MAX - HOURLY_MIN + 1)) + HOURLY_MIN;
+        const newCount = prev + randomIncrement;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ count: newCount, timestamp: Date.now() }));
+        return newCount;
+      });
+    }, 1000 * 60 * 60); // 1시간마다
+
+    return () => clearInterval(interval);
   }, []);
 
   // 모드 선택 시 스플래시 표시 후 이동
@@ -48,7 +101,7 @@ export function LandingPage() {
     return (
       <SplashScreen 
         mode={showSplash} 
-        duration={3000}
+        duration={4000}
         onComplete={() => {
           setShowSplash(null);
           navigate('/storage');
@@ -198,25 +251,45 @@ export function LandingPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 text-6xl text-amber-500">乾</div>
-          <div className="absolute top-40 right-20 text-5xl text-amber-500">坤</div>
-          <div className="absolute bottom-40 left-20 text-4xl text-amber-500">艮</div>
-          <div className="absolute bottom-20 right-10 text-5xl text-amber-500">兌</div>
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-8">
+        <div className="relative max-w-4xl mx-auto px-6 pb-8" style={{ paddingTop: '5px' }}>
           {/* Logo & Title */}
-          <div className="text-center mb-12">
-            <p className="text-gray-400 text-base" style={{ marginTop: '1px', marginBottom: '100px' }}>
-              사주명리 고전문헌(적천수/자평진전/궁통보감 등) 9종, 벡터/그래프 DB 기반 서비스
+          <div className="text-center mb-6">
+            <p className="text-gray-600 text-sm" style={{ marginTop: '0px', marginBottom: '40px' }}>
+              9종 중국 사주명리 고전문헌을 해킹하다.<br />AI가 찾아낸 인생 단 하나의 탈출구...
             </p>
             
-            <div className="mb-4 flex flex-col items-center">
+            <div className="mb-4 flex flex-col items-center relative overflow-hidden" style={{ minHeight: '358px' }}>
+              {/* 천간/지지 배경 - 타이틀 영역 내부에만 표시 (겹치지 않게 배치) */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                {/* 천간 (天干) - 좌측 배치 */}
+                <div className="absolute text-2xl text-amber-500" style={{ top: '2%', left: '2%', transform: 'rotate(-12deg)' }}>甲</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '12%', left: '12%', transform: 'rotate(8deg)' }}>乙</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '24%', left: '3%', transform: 'rotate(-18deg)' }}>丙</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '36%', left: '14%', transform: 'rotate(15deg)' }}>丁</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '48%', left: '4%', transform: 'rotate(-8deg)' }}>戊</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '60%', left: '12%', transform: 'rotate(12deg)' }}>己</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '72%', left: '2%', transform: 'rotate(-20deg)' }}>庚</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '84%', left: '14%', transform: 'rotate(10deg)' }}>辛</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '92%', left: '3%', transform: 'rotate(-15deg)' }}>壬</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '96%', left: '22%', transform: 'rotate(5deg)' }}>癸</div>
+                
+                {/* 지지 (地支) - 우측 배치 */}
+                <div className="absolute text-2xl text-amber-500" style={{ top: '2%', right: '2%', transform: 'rotate(12deg)' }}>子</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '12%', right: '14%', transform: 'rotate(-10deg)' }}>丑</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '24%', right: '3%', transform: 'rotate(18deg)' }}>寅</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '36%', right: '12%', transform: 'rotate(-15deg)' }}>卯</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '48%', right: '4%', transform: 'rotate(8deg)' }}>辰</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '60%', right: '14%', transform: 'rotate(-12deg)' }}>巳</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '72%', right: '2%', transform: 'rotate(20deg)' }}>午</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '84%', right: '12%', transform: 'rotate(-8deg)' }}>未</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '92%', right: '3%', transform: 'rotate(15deg)' }}>申</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '96%', right: '22%', transform: 'rotate(-5deg)' }}>酉</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '6%', right: '26%', transform: 'rotate(10deg)' }}>戌</div>
+                <div className="absolute text-2xl text-amber-500" style={{ top: '6%', left: '26%', transform: 'rotate(-10deg)' }}>亥</div>
+              </div>
               <div className="relative">
 <h1 
-                className="text-8xl md:text-[10rem] font-black text-white flex flex-col items-center" 
+                className="text-7xl md:text-9xl font-black text-white flex flex-col items-center" 
                 style={{ 
                   fontFamily: "'Klee One', serif",
                   letterSpacing: '0.1em',
@@ -224,17 +297,17 @@ export function LandingPage() {
                   WebkitFontSmoothing: 'antialiased'
                 }}
               >
-                <span style={{ display: 'inline-block', transform: 'rotate(-1deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>天</span>
-                <span style={{ display: 'inline-block', transform: 'rotate(-2deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>乙</span>
-                <span style={{ display: 'inline-block', transform: 'rotate(-3deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>貴</span>
-                <span style={{ display: 'inline-block', transform: 'rotate(-4deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>人</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(0deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>天</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(0deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>乙</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(0deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>貴</span>
+                <span style={{ display: 'inline-block', transform: 'rotate(0deg)', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>人</span>
               </h1>
                 {/* 붉은색 인장 */}
                 <div 
                   style={{
                     position: 'absolute',
-                    bottom: '-20px',
-                    left: '80px',
+                    bottom: '-35px',
+                    left: '55px',
                     width: '60px',
                     height: '60px',
                     border: '5px solid #c41e3a',
@@ -282,23 +355,23 @@ export function LandingPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-white text-sm tracking-widest" style={{ marginTop: '30px' }}>ver 1.0</p>
+              <p className="text-gray-600 text-sm tracking-widest" style={{ marginTop: '50px' }}>(천을귀인 ver 1.0)</p>
             </div>
             
-            <p className="text-base text-slate-300 mb-2" style={{ marginTop: '100px', marginBottom: '16px' }}>
-              전통 명리학 이론을 기준으로 당신의 운명을 완벽하게 해석해 드립니다.
+            <p className="text-sm text-slate-500 mb-2" style={{ marginTop: '50px', marginBottom: '16px' }}>
+              당신에게 필요한 것은 위로 보다 진실입니다.<br />고전문헌이 증명하는 당신의 진짜 미래를 감당해 보시겠습니까?
             </p>
           </div>
 
           {/* Mode Selection - 3가지 모드 (인트로 디자인 적용) */}
           <div className="mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-lg mx-auto">
+            <div className="flex flex-col gap-3 mx-auto" style={{ maxWidth: '420px' }}>
               {/* 일반 모드 - 로즈골드 (#BC8F8F) */}
               <button 
                 onClick={() => handleModeSelect('beginner')}
                 onMouseEnter={() => setHoveredMode('beginner')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'beginner' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -306,11 +379,12 @@ export function LandingPage() {
                 style={{
                   background: mode === 'beginner' ? MODE_THEMES.beginner.bgGradient : 'rgba(188, 143, 143, 0.1)',
                   borderColor: MODE_THEMES.beginner.primary,
+                  padding: '5px 3px',
                 }}
               >
-                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.beginner.primary }}>일반 모드</span>
-                <span className="text-xs mt-1" style={{ color: MODE_THEMES.beginner.textSecondary }}>
-                  쉽고 부드러운 표현
+                <span className="font-bold text-sm" style={{ color: MODE_THEMES.beginner.primary }}>일반 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.beginner.textMuted }}>
+                  "운명 해독 (초보자)" - 핵심만 빠르게 보고 싶을 때
                 </span>
                 {mode === 'beginner' && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.beginner.primary }}>
@@ -326,7 +400,7 @@ export function LandingPage() {
                 onClick={() => handleModeSelect('advanced')}
                 onMouseEnter={() => setHoveredMode('advanced')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'advanced' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -334,11 +408,12 @@ export function LandingPage() {
                 style={{
                   background: mode === 'advanced' ? MODE_THEMES.advanced.bgGradient : 'rgba(147, 112, 219, 0.1)',
                   borderColor: MODE_THEMES.advanced.primary,
+                  padding: '5px 3px',
                 }}
               >
-                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.advanced.primary }}>고급 모드</span>
-                <span className="text-xs mt-1" style={{ color: MODE_THEMES.advanced.textSecondary }}>
-                  명리 전문 용어 사용
+                <span className="font-bold text-sm" style={{ color: MODE_THEMES.advanced.primary }}>고급 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.advanced.textMuted }}>
+                  "심층 분석 (매니아)" - 내 팔자의 디테일을 알고 싶을 때
                 </span>
                 {mode === 'advanced' && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.advanced.primary }}>
@@ -354,7 +429,7 @@ export function LandingPage() {
                 onClick={() => handleModeSelect('expert')}
                 onMouseEnter={() => setHoveredMode('expert')}
                 onMouseLeave={() => setHoveredMode(null)}
-                className={`relative group flex flex-col items-center p-3 rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
+                className={`relative group flex flex-col items-center rounded-2xl font-medium transition-all hover:scale-105 border-2 ${
                   mode === 'expert' 
                     ? 'shadow-lg' 
                     : 'border-opacity-40 hover:border-opacity-100'
@@ -362,11 +437,12 @@ export function LandingPage() {
                 style={{
                   background: mode === 'expert' ? MODE_THEMES.expert.bgGradient : 'rgba(212, 175, 55, 0.1)',
                   borderColor: MODE_THEMES.expert.primary,
+                  padding: '5px 3px',
                 }}
               >
-                <span className="font-semibold text-lg" style={{ color: MODE_THEMES.expert.primary }}>전문가 모드</span>
-                <span className="text-xs mt-1" style={{ color: MODE_THEMES.expert.textSecondary }}>
-                  원문 검색 · 고객 관리
+                <span className="font-bold text-sm" style={{ color: MODE_THEMES.expert.primary }}>전문가 모드</span>
+                <span className="text-xs mt-1" style={{ color: MODE_THEMES.expert.textMuted }}>
+                  "천기누설 (전문가)" - 고전 원문과 AI의 끝장 토론
                 </span>
                 {mode === 'expert' && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: MODE_THEMES.expert.primary }}>
@@ -380,27 +456,19 @@ export function LandingPage() {
 
           </div>
 
-          {/* Language Selection */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <span className="text-slate-400 text-sm">언어:</span>
-            <div className="relative">
-              <select 
-                value={selectedLanguage}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className="appearance-none bg-slate-800 text-white rounded-lg border border-slate-600 px-4 py-2 pr-10 cursor-pointer text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            </div>
-          </div>
-
           {/* Login/Signup Section */}
           <div className="flex flex-col items-center gap-4 mb-8">
+            {/* 신뢰 지표 */}
+            <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
+              <span className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                적천수·자평진전 포함 9종 고전 완벽 학습
+              </span>
+              <span className="text-slate-600">|</span>
+              <span>AI 사주분석: {analysisCount.toLocaleString()}건</span>
+            </div>
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700">
@@ -418,39 +486,7 @@ export function LandingPage() {
                   로그아웃
                 </button>
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <p className="text-slate-400 text-sm">간편 회원가입 / 로그인</p>
-                <div className="flex gap-3">
-                  {/* 카카오 로그인 버튼 */}
-                  <button
-                    onClick={handleKakaoLogin}
-                    disabled={isLoggingIn}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#FEE500] text-[#000000] rounded-xl font-medium hover:bg-[#FDD800] transition-all disabled:opacity-50"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 3C6.477 3 2 6.463 2 10.691c0 2.643 1.756 4.965 4.4 6.286-.139.533-.501 1.93-.573 2.229-.09.372.136.367.287.267.118-.078 1.879-1.277 2.639-1.796.407.058.825.088 1.247.088 5.523 0 10-3.463 10-7.691C20 6.463 17.523 3 12 3z"/>
-                    </svg>
-                    카카오
-                  </button>
-                  
-                  {/* 구글 로그인 버튼 */}
-                  <button
-                    onClick={handleGoogleLogin}
-                    disabled={isLoggingIn}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 rounded-xl font-medium hover:bg-gray-100 transition-all disabled:opacity-50"
-                  >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Google
-                  </button>
-                </div>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { ArrowLeft, Database, BookOpen, Search, Brain, CheckCircle, Sparkles, TrendingUp, Shield, Zap, Globe, Award, Star, Target, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface ClassicBook {
   name: string;
@@ -122,9 +124,11 @@ const totalChunks = classicBooks.reduce((sum, book) => sum + book.chunks, 0);
 
 export default function ClassicsInfoPage() {
   const navigate = useNavigate();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

@@ -18,6 +18,8 @@ import {
   Info
 } from 'lucide-react';
 import { analyzeDailyFortune, type DailyFortuneResponse } from '@/lib/saju-api-client';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface LocationState {
   profile?: {
@@ -47,6 +49,8 @@ export function DailyFortunePage() {
   const location = useLocation();
   const state = location.state as LocationState;
   const profile = state?.profile;
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -166,7 +170,7 @@ export function DailyFortunePage() {
   // 프로필 없을 때
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen" style={{ background: theme.bgGradient }}>
         <div className="max-w-lg mx-auto px-4 py-6">
           <div className="flex items-center mb-6">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-white hover:bg-white/10 rounded-full">
@@ -194,7 +198,7 @@ export function DailyFortunePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

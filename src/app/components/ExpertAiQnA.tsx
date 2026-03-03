@@ -90,7 +90,7 @@ export function ExpertAiQnA() {
     setIsLoading(true);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/expert/qna`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://ai-saju-production.up.railway.app'}/api/expert/qna`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -10,12 +10,16 @@ import {
   Clock
 } from 'lucide-react';
 import { confirmPayment, IS_TEST_MODE } from '@/lib/payment';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 type ResultType = 'success' | 'fail' | 'processing';
 
 export function PaymentResultPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   
   // URL 파라미터에서 결제 정보 추출
   const paymentKey = searchParams.get('paymentKey');
@@ -97,7 +101,7 @@ export function PaymentResultPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
       <div className="max-w-md mx-auto px-6 py-12 text-center">
         {/* 처리 중 */}
         {result === 'processing' && (

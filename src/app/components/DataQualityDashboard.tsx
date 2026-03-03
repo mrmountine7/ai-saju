@@ -21,6 +21,8 @@ import {
   Clock,
   BarChart3
 } from 'lucide-react';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 // 타입 정의
 interface ValidationSummary {
@@ -168,6 +170,8 @@ const SAMPLE_ISSUES: ValidationIssue[] = [
 
 export default function DataQualityDashboard() {
   const navigate = useNavigate();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [report, setReport] = useState<IntegratedReport | null>(SAMPLE_REPORT);
   const [issues, setIssues] = useState<ValidationIssue[]>(SAMPLE_ISSUES);
   const [isLoading, setIsLoading] = useState(false);
@@ -240,7 +244,7 @@ export default function DataQualityDashboard() {
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center">
           <RefreshCw className="w-12 h-12 text-amber-400 animate-spin mx-auto mb-4" />
           <p className="text-slate-300">리포트 로딩 중...</p>
@@ -250,7 +254,7 @@ export default function DataQualityDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       {/* 헤더 */}
       <div className="bg-slate-800/50 border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 py-4">

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { getDeviceId } from '@/lib/device-id';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 // Profile 행 타입 정의
 interface ProfileRow {
@@ -88,6 +90,8 @@ function getDaysInMonth(year: number, month: number): number {
 export function AddPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [searchParams] = useSearchParams();
   const profileId = searchParams.get('id');
   const [loading, setLoading] = useState(false);
@@ -281,7 +285,7 @@ export function AddPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

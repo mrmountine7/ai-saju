@@ -19,6 +19,8 @@ import {
   Check
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface ClientGroup {
   id: string;
@@ -50,6 +52,8 @@ const DEFAULT_GROUPS: ClientGroup[] = [
 export function ClientManagementPage() {
   const navigate = useNavigate();
   const { isExpertUser } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [clients, setClients] = useState<Client[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -196,7 +200,7 @@ export function ClientManagementPage() {
 
   if (!isExpertUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         <div className="text-center px-4">
           <User className="w-16 h-16 text-purple-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">전문가 전용 기능</h2>
@@ -213,7 +217,7 @@ export function ClientManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

@@ -23,6 +23,9 @@ export interface ModeTheme {
   // 카드
   cardBg: string;
   cardBorder: string;
+  cardBorderWidth: string;
+  cardText: string;
+  cardTextMuted: string;
   // 폰트
   fontFamily: string;
 }
@@ -32,7 +35,7 @@ export const MODE_THEMES: Record<AnalysisMode, ModeTheme> = {
     id: 'beginner',
     name: '일반인 모드',
     description: '누구나 쉽게 이해하는 사주풀이',
-    // 로즈 골드 계열 (따뜻하고 부드러운 느낌)
+    // 로즈 골드 계열 (원본 디자인)
     primary: '#BC8F8F',
     primaryGlow: 'rgba(188, 143, 143, 0.7)',
     bgGradient: 'linear-gradient(to bottom, #000000, #1a0a0a)',
@@ -45,6 +48,9 @@ export const MODE_THEMES: Record<AnalysisMode, ModeTheme> = {
     buttonText: '#1a0a0a',
     cardBg: 'rgba(188, 143, 143, 0.1)',
     cardBorder: 'rgba(188, 143, 143, 0.3)',
+    cardBorderWidth: '1px',
+    cardText: '#d4b8b8',
+    cardTextMuted: '#8b7070',
     fontFamily: "'Klee One', serif",
   },
   advanced: {
@@ -64,6 +70,9 @@ export const MODE_THEMES: Record<AnalysisMode, ModeTheme> = {
     buttonText: '#0a0a1a',
     cardBg: 'rgba(147, 112, 219, 0.1)',
     cardBorder: 'rgba(147, 112, 219, 0.3)',
+    cardBorderWidth: '1px',
+    cardText: '#b8a5d4',
+    cardTextMuted: '#706088',
     fontFamily: "'Klee One', serif",
   },
   expert: {
@@ -83,6 +92,9 @@ export const MODE_THEMES: Record<AnalysisMode, ModeTheme> = {
     buttonText: '#1a1a0a',
     cardBg: 'rgba(212, 175, 55, 0.1)',
     cardBorder: 'rgba(212, 175, 55, 0.3)',
+    cardBorderWidth: '1px',
+    cardText: '#e8d48a',
+    cardTextMuted: '#8b8040',
     fontFamily: "'Klee One', serif",
   },
 };

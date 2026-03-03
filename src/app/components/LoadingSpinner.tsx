@@ -1,4 +1,6 @@
 import { Loader2, Database } from 'lucide-react';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -15,6 +17,9 @@ export function LoadingSpinner({
   showIcon = true,
   fullScreen = false,
 }: LoadingSpinnerProps) {
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
+
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-12 h-12',
@@ -30,9 +35,9 @@ export function LoadingSpinner({
   const content = (
     <div className="text-center">
       <div className="relative inline-block">
-        <Loader2 className={`animate-spin text-amber-400 ${sizeClasses[size]}`} />
+        <Loader2 className={`animate-spin ${sizeClasses[size]}`} style={{ color: theme.primary }} />
         {showIcon && (
-          <Database className={`text-amber-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${iconSizes[size]}`} />
+          <Database className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${iconSizes[size]}`} style={{ color: theme.primary }} />
         )}
       </div>
       {message && (
@@ -50,7 +55,7 @@ export function LoadingSpinner({
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bgGradient }}>
         {content}
       </div>
     );

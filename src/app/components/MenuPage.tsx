@@ -22,6 +22,8 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { PRODUCTS } from '@/lib/payment';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface MenuItem {
   icon: React.ElementType;
@@ -34,6 +36,8 @@ interface MenuItem {
 
 export function MenuPage() {
   const navigate = useNavigate();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
 
   const mainMenus: MenuItem[] = [
     { icon: Home, label: '홈', sublabel: '메인화면', path: '/', color: 'text-amber-400', bgColor: 'bg-amber-500/20' },
@@ -92,7 +96,7 @@ export function MenuPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

@@ -18,6 +18,8 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { MODE_THEMES } from '@/contexts/ThemeContext';
 
 interface QuickActionProps {
   icon: React.ReactNode;
@@ -57,6 +59,8 @@ function QuickAction({ icon, title, description, onClick, badge }: QuickActionPr
 export function ExpertModePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { mode } = useAnalysisMode();
+  const theme = MODE_THEMES[mode];
   const [recentClients] = useState([
     { id: '1', name: '김철수', lastAnalysis: '2026-01-15', analyses: 3 },
     { id: '2', name: '이영희', lastAnalysis: '2026-01-12', analyses: 2 },
@@ -88,7 +92,7 @@ export function ExpertModePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen" style={{ background: theme.bgGradient }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

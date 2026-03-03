@@ -206,17 +206,31 @@ class SajuCalculator:
         self._calc = SajuPyCalculator()
     
     def calculate(self, year: int, month: int, day: int, hour: int, minute: int = 0, 
-                  is_lunar: bool = False, gender: str = 'male') -> SajuInfo:
-        """사주 계산 수행"""
+                  is_lunar: bool = False, is_leap_month: bool = False,
+                  gender: str = 'male', name: str = '', use_solar_time: bool = False) -> SajuInfo:
+        """사주 계산 수행
+        
+        Args:
+            year: 출생년도
+            month: 출생월
+            day: 출생일
+            hour: 출생시
+            minute: 출생분
+            is_lunar: 음력 여부
+            is_leap_month: 윤달 여부
+            gender: 성별 ('male' or 'female')
+            name: 이름
+            use_solar_time: 진태양시 사용 여부
+        """
         try:
             # 음력인 경우 양력으로 변환
             if is_lunar:
-                solar = self._calc.lunar_to_solar(year, month, day)
+                solar = self._calc.lunar_to_solar(year, month, day, is_leap_month)
                 if solar:
                     year, month, day = solar['year'], solar['month'], solar['day']
             
-            # 사주 계산
-            result = self._calc.calculate_saju(year, month, day, hour, minute)
+            # 사주 계산 (use_solar_time 옵션 적용)
+            result = self._calc.calculate_saju(year, month, day, hour, minute, use_solar_time=use_solar_time)
             return SajuInfo(result, year, month, day, hour, minute, is_lunar, gender)
         except Exception as e:
             print(f"[SajuCalculator] 계산 오류: {e}")
